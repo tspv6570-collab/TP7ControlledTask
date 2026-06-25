@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hypothetical Situations – Controlled Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+                600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81',
+              },
+              correct: '#16a34a', 'correct-bg': '#dcfce7',
+              incorrect: '#dc2626', 'incorrect-bg': '#fee2e2',
+              hint: '#d97706', 'hint-bg': '#fffbeb',
+              surface: {
+                50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5',
+                300: '#d4d4d4', 400: '#a3a3a3', 500: '#737373',
+                600: '#525252', 700: '#404040', 800: '#262626', 900: '#171717',
+              },
+            },
+            fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          },
+        },
+      };
+    </script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <style>
+      :root {
+        --primary: #4f46e5; --primary-light: #eef2ff; --primary-dark: #3730a3;
+        --correct: #16a34a; --correct-bg: #dcfce7;
+        --incorrect: #dc2626; --incorrect-bg: #fee2e2;
+        --hint: #d97706; --hint-bg: #fffbeb;
+      }
+      * { box-sizing: border-box; }
+      body { font-family: 'Inter', system-ui, sans-serif; background: #ffffff; color: #262626; margin: 0; }
+      .tab-btn { transition: all 0.2s ease; }
+      .tab-btn.active { background: var(--primary); color: white; }
+      .tab-btn:not(.active):hover { background: var(--primary-light); color: var(--primary); }
+      .section-panel { display: none; animation: fadeIn 0.3s ease; }
+      .section-panel.active { display: block; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 0.6rem center; padding-right: 2rem;
+      }
+      .answer-select {
+        border: 2px solid #d4d4d4; border-radius: 0.5rem;
+        padding: 0.4rem 2rem 0.4rem 0.6rem; font-size: 0.95rem;
+        font-family: 'Inter', sans-serif; font-weight: 500;
+        background-color: #fafafa; transition: border-color 0.2s; min-width: 140px;
+      }
+      .answer-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+      .answer-select.correct-answer { border-color: var(--correct) !important; background-color: var(--correct-bg) !important; }
+      .answer-select.incorrect-answer { border-color: var(--incorrect) !important; background-color: var(--incorrect-bg) !important; }
+      .mc-option {
+        border: 2px solid #e5e5e5; border-radius: 0.75rem;
+        padding: 0.75rem 1rem; cursor: pointer; transition: all 0.2s ease; font-size: 0.95rem;
+      }
+      .mc-option:hover:not(.checked) { border-color: var(--primary); background: var(--primary-light); }
+      .mc-option.selected { border-color: var(--primary); background: var(--primary-light); }
+      .mc-option.correct-choice { border-color: var(--correct) !important; background-color: var(--correct-bg) !important; }
+      .mc-option.incorrect-choice { border-color: var(--incorrect) !important; background-color: var(--incorrect-bg) !important; }
+      .mc-option.checked { pointer-events: none; }
+      .word-tile {
+        display: inline-flex; align-items: center; padding: 0.5rem 1rem;
+        border-radius: 0.5rem; background: var(--primary-light); color: var(--primary);
+        font-weight: 600; font-size: 0.9rem; cursor: pointer; user-select: none;
+        transition: all 0.15s ease; border: 2px solid transparent;
+      }
+      .word-tile:hover { background: #c7d2fe; }
+      .word-tile.in-answer { background: var(--primary); color: white; }
+      .answer-zone {
+        min-height: 52px; border: 2px dashed #d4d4d4; border-radius: 0.75rem;
+        padding: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem;
+        align-items: center; transition: border-color 0.2s; background: #fafafa;
+      }
+      .answer-zone.correct-zone { border-color: var(--correct) !important; border-style: solid; background: var(--correct-bg) !important; }
+      .answer-zone.incorrect-zone { border-color: var(--incorrect) !important; border-style: solid; background: var(--incorrect-bg) !important; }
+      .text-input-answer {
+        border: 2px solid #d4d4d4; border-radius: 0.5rem; padding: 0.5rem 0.75rem;
+        font-size: 0.95rem; font-family: 'Inter', sans-serif; width: 100%; max-width: 320px;
+        transition: border-color 0.2s;
+      }
+      .text-input-answer:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+      .text-input-answer.correct-answer { border-color: var(--correct) !important; background-color: var(--correct-bg) !important; }
+      .text-input-answer.incorrect-answer { border-color: var(--incorrect) !important; background-color: var(--incorrect-bg) !important; }
+      .grammar-reminder { border-left: 4px solid var(--primary); background: var(--primary-light); padding: 1rem 1.25rem; border-radius: 0 0.75rem 0.75rem 0; margin-top: 1.5rem; }
+      .verb-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 0.75rem; padding: 1rem 1.25rem; }
+      .check-btn {
+        background: var(--primary); color: white; border: none; padding: 0.65rem 1.5rem;
+        border-radius: 0.75rem; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+        transition: background 0.2s; font-family: 'Inter', sans-serif;
+      }
+      .check-btn:hover { background: var(--primary-dark); }
+      .check-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .reset-btn {
+        background: #f5f5f5; color: #525252; border: 2px solid #e5e5e5;
+        padding: 0.55rem 1.25rem; border-radius: 0.75rem; font-weight: 600;
+        font-size: 0.9rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+      }
+      .reset-btn:hover { background: #e5e5e5; }
+      .hint-btn {
+        background: none; border: 1px solid #d97706; color: #d97706;
+        padding: 0.3rem 0.8rem; border-radius: 0.5rem; font-size: 0.8rem;
+        cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+      }
+      .hint-btn:hover { background: #fffbeb; }
+      .badge-check {
+        background: var(--correct); color: white; border-radius: 50%;
+        width: 18px; height: 18px; display: inline-flex; align-items: center;
+        justify-content: center; font-size: 11px; font-weight: 700; margin-left: 4px;
+      }
+      .tooltip-correct { font-size: 0.8rem; color: var(--correct); font-weight: 500; margin-top: 0.2rem; }
+      .tooltip-incorrect { font-size: 0.8rem; color: var(--incorrect); font-weight: 500; margin-top: 0.2rem; }
+      .progress-bar-bg { background: #e5e5e5; border-radius: 999px; height: 8px; overflow: hidden; }
+      .progress-bar-fill { background: var(--primary); height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+      .ref-panel summary { cursor: pointer; list-style: none; }
+      .ref-panel summary::-webkit-details-marker { display: none; }
+      .results-table td, .results-table th { padding: 0.6rem 1rem; text-align: left; }
+      @media (max-width: 640px) {
+        .tab-btn { font-size: 0.72rem; padding: 0.4rem 0.5rem; }
+        .answer-select { min-width: 120px; font-size: 0.85rem; }
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-surface-200 sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 md:px-6 py-4">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-surface-900">Hypothetical Situations</h1>
+          <p class="text-sm text-surface-500 mt-0.5">Controlled Practice — B1 Level</p>
+        </div>
+        <span id="progress-text" class="text-xs font-semibold text-primary-600">0 / 4 sections</span>
+      </div>
+      <div class="progress-bar-bg"><div id="progress-bar" class="progress-bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="max-w-4xl mx-auto px-4 md:px-6 pb-0">
+      <div class="flex gap-1.5 overflow-x-auto pb-3" id="tab-container">
+        <button class="tab-btn active flex items-center gap-1 px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section1">1: If…would<span class="badge-check hidden" id="badge1">✓</span></button>
+        <button class="tab-btn flex items-center gap-1 px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section2">2: I wish<span class="badge-check hidden" id="badge2">✓</span></button>
+        <button class="tab-btn flex items-center gap-1 px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section3">3: Word Order<span class="badge-check hidden" id="badge3">✓</span></button>
+        <button class="tab-btn flex items-center gap-1 px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section4">4: It's time<span class="badge-check hidden" id="badge4">✓</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-6">
+
+    <!-- SECTION 1 -->
+    <div id="section1" class="section-panel active">
+      <div class="rounded-xl overflow-hidden mb-6">
+        <div class="bg-primary-600 text-white px-5 py-3">
+          <h2 class="text-lg font-semibold">Structure 1: If + past simple, would + base verb</h2>
+          <p class="text-sm text-primary-200 mt-0.5">These sentences describe imaginary situations. Choose the correct verb form.</p>
+        </div>
+      </div>
+      <div class="verb-box mb-6">
+        <p class="text-xs font-semibold text-hint uppercase tracking-wide mb-2">📖 Irregular Verb Reference</p>
+        <p class="text-sm text-surface-700">go → went | have → had | be → were | can → could | know → knew | speak → spoke | live → lived | find → found | lose → lost | work → worked</p>
+      </div>
+      <div class="space-y-5">
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-2">Question 1</p>
+          <p class="text-base text-surface-800 leading-relaxed">"If I
+            <select class="answer-select s1-select" data-correct="had">
+              <option value="">—</option><option value="had">had</option><option value="have">have</option><option value="will have">will have</option><option value="would have">would have</option>
+            </select>
+            more free time, I would
+            <select class="answer-select s1-select" data-correct="travel">
+              <option value="">—</option><option value="travel">travel</option><option value="travelled">travelled</option><option value="to travel">to travel</option><option value="would travel">would travel</option>
+            </select>
+            to South America."
+          </p>
+          <div class="s1-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-2">Question 2</p>
+          <p class="text-base text-surface-800 leading-relaxed">"She would learn to cook if she
+            <select class="answer-select s1-select" data-correct="didn't work">
+              <option value="">—</option><option value="didn't work">didn't work</option><option value="doesn't work">doesn't work</option><option value="wouldn't work">wouldn't work</option><option value="won't work">won't work</option>
+            </select>
+            so much."
+          </p>
+          <div class="s1-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-2">Question 3</p>
+          <p class="text-base text-surface-800 leading-relaxed">"If we
+            <select class="answer-select s1-select" data-correct="lived">
+              <option value="">—</option><option value="lived">lived</option><option value="live">live</option><option value="would live">would live</option><option value="will live">will live</option>
+            </select>
+            near the beach, we would swim every morning."
+          </p>
+          <div class="s1-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-2">Question 4</p>
+          <p class="text-base text-surface-800 leading-relaxed">"What would you do if you
+            <select class="answer-select s1-select" data-correct="found">
+              <option value="">—</option><option value="found">found</option><option value="find">find</option><option value="would find">would find</option><option value="had found">had found</option>
+            </select>
+            a wallet full of money?"
+          </p>
+          <div class="s1-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-2">Question 5</p>
+          <p class="text-base text-surface-800 leading-relaxed">"If I
+            <select class="answer-select s1-select" data-correct="were">
+              <option value="">—</option><option value="were">were</option><option value="am">am</option><option value="will be">will be</option><option value="would be">would be</option>
+            </select>
+            the president, I would change the education system."
+          </p>
+          <div class="s1-feedback mt-2"></div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-6">
+        <button class="check-btn" id="s1-check">Check Answers</button>
+        <button class="reset-btn hidden" id="s1-reset">Try Again</button>
+      </div>
+      <div id="s1-score" class="mt-4 hidden"><p class="text-base font-semibold text-surface-800"></p></div>
+      <div id="s1-reminder" class="grammar-reminder hidden">
+        <p class="text-sm font-semibold text-primary-800 mb-1">💡 Grammar Reminder</p>
+        <p class="text-sm text-primary-700">Remember: After <strong>IF</strong> → use <strong>past simple</strong>. After the comma → use <strong>would + base verb</strong>.</p>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div id="section2" class="section-panel">
+      <div class="rounded-xl overflow-hidden mb-6">
+        <div class="bg-primary-600 text-white px-5 py-3">
+          <h2 class="text-lg font-semibold">Structure 2: I wish + past simple</h2>
+          <p class="text-sm text-primary-200 mt-0.5">Rewrite each sentence using 'I wish + past simple'.</p>
+        </div>
+      </div>
+      <div class="verb-box mb-6">
+        <p class="text-xs font-semibold text-hint uppercase tracking-wide mb-2">📖 Irregular Verb Reference</p>
+        <p class="text-sm text-surface-700">go → went | have → had | be → were | can → could | speak → spoke | live → lived</p>
+      </div>
+      <div class="space-y-5">
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-1">Question 1</p>
+          <p class="text-base text-surface-800 mb-3"><span class="bg-surface-200 px-2 py-0.5 rounded font-medium text-sm">I don't speak Spanish.</span></p>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-base font-medium">I wish I</span>
+            <input type="text" class="text-input-answer s2-input" data-q="1" placeholder="Type your answer…" autocomplete="off" />
+            <button class="hint-btn s2-hint" data-hint="Think: what's the past form of 'speak'?">💡 Hint</button>
+          </div>
+          <div class="s2-hint-text text-sm mt-2 hidden" style="color:var(--hint)"></div>
+          <div class="s2-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-1">Question 2</p>
+          <p class="text-base text-surface-800 mb-3"><span class="bg-surface-200 px-2 py-0.5 rounded font-medium text-sm">He lives far away.</span></p>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-base font-medium">I wish he</span>
+            <input type="text" class="text-input-answer s2-input" data-q="2" placeholder="Type your answer…" autocomplete="off" />
+            <button class="hint-btn s2-hint" data-hint="Use the past simple of 'live'.">💡 Hint</button>
+          </div>
+          <div class="s2-hint-text text-sm mt-2 hidden" style="color:var(--hint)"></div>
+          <div class="s2-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-1">Question 3</p>
+          <p class="text-base text-surface-800 mb-3"><span class="bg-surface-200 px-2 py-0.5 rounded font-medium text-sm">We don't have more time.</span></p>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-base font-medium">I wish we</span>
+            <input type="text" class="text-input-answer s2-input" data-q="3" placeholder="Type your answer…" autocomplete="off" />
+            <button class="hint-btn s2-hint" data-hint="Past of 'have' → had">💡 Hint</button>
+          </div>
+          <div class="s2-hint-text text-sm mt-2 hidden" style="color:var(--hint)"></div>
+          <div class="s2-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5">
+          <p class="text-sm font-semibold text-surface-500 mb-1">Question 4</p>
+          <p class="text-base text-surface-800 mb-3"><span class="bg-surface-200 px-2 py-0.5 rounded font-medium text-sm">It's Monday.</span></p>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-base font-medium">I wish it</span>
+            <input type="text" class="text-input-answer s2-input" data-q="4" placeholder="Type your answer…" autocomplete="off" />
+            <button class="hint-btn s2-hint" data-hint="After 'wish' with 'to be' → use 'were' (formal) or 'was' (informal).">💡 Hint</button>
+          </div>
+          <div class="s2-hint-text text-sm mt-2 hidden" style="color:var(--hint)"></div>
+          <div class="s2-feedback mt-2"></div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-6">
+        <button class="check-btn" id="s2-check">Check Answers</button>
+        <button class="reset-btn hidden" id="s2-reset">Try Again</button>
+      </div>
+      <div id="s2-score" class="mt-4 hidden"><p class="text-base font-semibold text-surface-800"></p></div>
+      <div id="s2-reminder" class="grammar-reminder hidden">
+        <p class="text-sm font-semibold text-primary-800 mb-1">💡 Grammar Reminder</p>
+        <p class="text-sm text-primary-700">After <strong>'I wish'</strong> → use <strong>past simple</strong>. This shows the situation is <strong>NOT real now</strong>.</p>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div id="section3" class="section-panel">
+      <div class="rounded-xl overflow-hidden mb-6">
+        <div class="bg-primary-600 text-white px-5 py-3">
+          <h2 class="text-lg font-semibold">Structure 3: What would you do if + past simple?</h2>
+          <p class="text-sm text-primary-200 mt-0.5">Click the word tiles in order to build each sentence. Click a tile in the answer zone to remove it.</p>
+        </div>
+      </div>
+      <div class="grammar-reminder mb-6">
+        <p class="text-sm font-semibold text-primary-800 mb-1">💡 Word Order Rule</p>
+        <p class="text-sm text-primary-700"><strong>WHAT</strong> + <strong>WOULD</strong> + subject + <strong>DO</strong> + <strong>IF</strong> + subject + past simple + <strong>?</strong></p>
+      </div>
+      <div class="space-y-6">
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s3-q-block" id="s3q1" data-answer="What would you do if you lost your phone?">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 1</p>
+          <div class="word-bank flex flex-wrap gap-2 mb-3">
+            <span class="word-tile" data-word="do">do</span><span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="if">if</span><span class="word-tile" data-word="What">What</span><span class="word-tile" data-word="your">your</span><span class="word-tile" data-word="lost">lost</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="phone">phone</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="?">?</span>
+          </div>
+          <p class="text-xs text-surface-400 mb-1.5">Your answer:</p>
+          <div class="answer-zone"></div>
+          <div class="s3-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s3-q-block" id="s3q2" data-answer="What would you do if you had a million dollars?">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 2</p>
+          <div class="word-bank flex flex-wrap gap-2 mb-3">
+            <span class="word-tile" data-word="if">if</span><span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="do">do</span><span class="word-tile" data-word="had">had</span><span class="word-tile" data-word="a">a</span><span class="word-tile" data-word="What">What</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="million">million</span><span class="word-tile" data-word="dollars">dollars</span><span class="word-tile" data-word="?">?</span>
+          </div>
+          <p class="text-xs text-surface-400 mb-1.5">Your answer:</p>
+          <div class="answer-zone"></div>
+          <div class="s3-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s3-q-block" id="s3q3" data-answer="What would you do if you lost your job?">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 3</p>
+          <div class="word-bank flex flex-wrap gap-2 mb-3">
+            <span class="word-tile" data-word="do">do</span><span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="your">your</span><span class="word-tile" data-word="if">if</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="job">job</span><span class="word-tile" data-word="lost">lost</span><span class="word-tile" data-word="What">What</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="?">?</span>
+          </div>
+          <p class="text-xs text-surface-400 mb-1.5">Your answer:</p>
+          <div class="answer-zone"></div>
+          <div class="s3-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s3-q-block" id="s3q4" data-answer="I would move to another city.">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 4 <span class="text-xs font-normal text-surface-400">(answer sentence)</span></p>
+          <div class="word-bank flex flex-wrap gap-2 mb-3">
+            <span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="to">to</span><span class="word-tile" data-word="I">I</span><span class="word-tile" data-word="move">move</span><span class="word-tile" data-word="another">another</span><span class="word-tile" data-word="city">city</span><span class="word-tile" data-word=".">.</span>
+          </div>
+          <p class="text-xs text-surface-400 mb-1.5">Your answer:</p>
+          <div class="answer-zone"></div>
+          <div class="s3-feedback mt-2"></div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-6">
+        <button class="check-btn" id="s3-check">Check Answers</button>
+        <button class="reset-btn hidden" id="s3-reset">Try Again</button>
+      </div>
+      <div id="s3-score" class="mt-4 hidden"><p class="text-base font-semibold text-surface-800"></p></div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div id="section4" class="section-panel">
+      <div class="rounded-xl overflow-hidden mb-6">
+        <div class="bg-primary-600 text-white px-5 py-3">
+          <h2 class="text-lg font-semibold">Structure 4: It's time + subject + past simple</h2>
+          <p class="text-sm text-primary-200 mt-0.5">Choose the sentence that is grammatically correct and natural.</p>
+        </div>
+      </div>
+      <div class="space-y-5">
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="B">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 1</p>
+          <div class="space-y-2">
+            <div class="mc-option" data-value="A"><span class="font-semibold text-surface-400 mr-2">A.</span> It's time we learn how to save money.</div>
+            <div class="mc-option" data-value="B"><span class="font-semibold text-surface-400 mr-2">B.</span> It's time we learned how to save money.</div>
+            <div class="mc-option" data-value="C"><span class="font-semibold text-surface-400 mr-2">C.</span> It's time we will learn how to save money.</div>
+            <div class="mc-option" data-value="D"><span class="font-semibold text-surface-400 mr-2">D.</span> It's time we are learning how to save money.</div>
+          </div>
+          <div class="s4-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="C">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 2</p>
+          <div class="space-y-2">
+            <div class="mc-option" data-value="A"><span class="font-semibold text-surface-400 mr-2">A.</span> It's time he apologises for what he said.</div>
+            <div class="mc-option" data-value="B"><span class="font-semibold text-surface-400 mr-2">B.</span> It's time he will apologise for what he said.</div>
+            <div class="mc-option" data-value="C"><span class="font-semibold text-surface-400 mr-2">C.</span> It's time he apologised for what he said.</div>
+            <div class="mc-option" data-value="D"><span class="font-semibold text-surface-400 mr-2">D.</span> It's time he would apologise for what he said.</div>
+          </div>
+          <div class="s4-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="C">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 3</p>
+          <div class="space-y-2">
+            <div class="mc-option" data-value="A"><span class="font-semibold text-surface-400 mr-2">A.</span> It's time you would start exercising.</div>
+            <div class="mc-option" data-value="B"><span class="font-semibold text-surface-400 mr-2">B.</span> It's time you start exercising.</div>
+            <div class="mc-option" data-value="C"><span class="font-semibold text-surface-400 mr-2">C.</span> It's time you started exercising.</div>
+            <div class="mc-option" data-value="D"><span class="font-semibold text-surface-400 mr-2">D.</span> It's time you are starting exercising.</div>
+          </div>
+          <div class="s4-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="A">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 4</p>
+          <div class="space-y-2">
+            <div class="mc-option" data-value="A"><span class="font-semibold text-surface-400 mr-2">A.</span> It's time we left the party.</div>
+            <div class="mc-option" data-value="B"><span class="font-semibold text-surface-400 mr-2">B.</span> It's time we leave the party.</div>
+            <div class="mc-option" data-value="C"><span class="font-semibold text-surface-400 mr-2">C.</span> It's time we will leave the party.</div>
+            <div class="mc-option" data-value="D"><span class="font-semibold text-surface-400 mr-2">D.</span> It's time we are leaving the party.</div>
+          </div>
+          <div class="s4-feedback mt-2"></div>
+        </div>
+        <div class="bg-surface-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="B">
+          <p class="text-sm font-semibold text-surface-500 mb-3">Question 5</p>
+          <div class="space-y-2">
+            <div class="mc-option" data-value="A"><span class="font-semibold text-surface-400 mr-2">A.</span> It's time they facing the truth.</div>
+            <div class="mc-option" data-value="B"><span class="font-semibold text-surface-400 mr-2">B.</span> It's time they faced the truth.</div>
+            <div class="mc-option" data-value="C"><span class="font-semibold text-surface-400 mr-2">C.</span> It's time they will face the truth.</div>
+            <div class="mc-option" data-value="D"><span class="font-semibold text-surface-400 mr-2">D.</span> It's time they would face the truth.</div>
+          </div>
+          <div class="s4-feedback mt-2"></div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 mt-6">
+        <button class="check-btn" id="s4-check">Check Answers</button>
+        <button class="reset-btn hidden" id="s4-reset">Try Again</button>
+      </div>
+      <div id="s4-score" class="mt-4 hidden"><p class="text-base font-semibold text-surface-800"></p></div>
+      <div id="s4-reminder" class="grammar-reminder hidden">
+        <p class="text-sm font-semibold text-primary-800 mb-1">💡 Grammar Reminder</p>
+        <p class="text-sm text-primary-700"><strong>It's time + subject + PAST SIMPLE</strong>. The past form signals <strong>urgency</strong> — not past time!</p>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results-panel" class="hidden mt-8 bg-primary-50 rounded-2xl p-6 md:p-8 border border-primary-100">
+      <h2 class="text-xl font-bold text-primary-800 mb-1">🏆 Final Results</h2>
+      <p class="text-sm text-primary-600 mb-5">You've completed all four sections.</p>
+      <div class="overflow-x-auto mb-5">
+        <table class="results-table w-full bg-white rounded-xl overflow-hidden text-sm">
+          <thead class="bg-primary-600 text-white">
+            <tr><th class="font-semibold">Structure</th><th class="font-semibold text-center">Your Score</th><th class="font-semibold text-center">Max</th></tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-surface-100"><td>1. If + past simple, would + base verb</td><td class="text-center font-semibold" id="res-s1">—</td><td class="text-center">5</td></tr>
+            <tr class="border-b border-surface-100"><td>2. I wish + past simple</td><td class="text-center font-semibold" id="res-s2">—</td><td class="text-center">4</td></tr>
+            <tr class="border-b border-surface-100"><td>3. What would you do if…?</td><td class="text-center font-semibold" id="res-s3">—</td><td class="text-center">4</td></tr>
+            <tr><td>4. It's time + subject + past simple</td><td class="text-center font-semibold" id="res-s4">—</td><td class="text-center">5</td></tr>
+          </tbody>
+          <tfoot class="bg-surface-50">
+            <tr><td class="font-bold">Total</td><td class="text-center font-bold" id="res-total">—</td><td class="text-center font-bold">18</td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <div id="results-message" class="text-base font-medium text-surface-800 mb-5"></div>
+      <button class="reset-btn" id="reset-all-btn">↺ Reset All Sections</button>
+    </div>
+  </main>
+
+  <!-- Grammar Reference -->
+  <div class="max-w-4xl mx-auto w-full px-4 md:px-6 mb-4">
+    <details class="ref-panel bg-surface-50 rounded-xl border border-surface-200">
+      <summary class="px-5 py-3 flex items-center justify-between text-sm font-semibold text-primary-700">
+        <span>📚 Grammar Reference</span><span>▾</span>
+      </summary>
+      <div class="px-5 pb-4 pt-1 space-y-3 text-sm text-surface-700">
+        <div><p class="font-semibold text-surface-800 mb-0.5">Structure 1: If + past simple, would + base verb</p><p>"If I <strong>HAD</strong> more time, I <strong>WOULD learn</strong> Italian."</p></div>
+        <div><p class="font-semibold text-surface-800 mb-0.5">Structure 2: I wish + past simple</p><p>"I <strong>WISH</strong> I <strong>lived</strong> closer to my family."</p></div>
+        <div><p class="font-semibold text-surface-800 mb-0.5">Structure 3: What would you do if + past simple?</p><p>"What would you <strong>DO</strong> if you <strong>LOST</strong> your phone?"</p></div>
+        <div><p class="font-semibold text-surface-800 mb-0.5">Structure 4: It's time + subject + past simple</p><p>"It's <strong>TIME</strong> we <strong>LEFT</strong>."</p></div>
+        <div class="bg-primary-50 rounded-lg px-4 py-2.5 border border-primary-100">
+          <p class="font-semibold text-primary-700">🔑 Key Rule: Past form after if / wish / it's time = <strong>IMAGINARY</strong>, not past time!</p>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <footer class="py-6 text-center border-t border-surface-100 mt-auto">
+    <p class="text-xs text-surface-400">Hypothetical Situations — Controlled Practice | B1 Level</p>
+  </footer>
+
+  <script>
+    // Tab navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Progress
+    const state = { scores: { s1: null, s2: null, s3: null, s4: null } };
+    function updateProgress() {
+      const done = Object.values(state.scores).filter(v => v !== null).length;
+      document.getElementById('progress-text').textContent = done + ' / 4 sections';
+      document.getElementById('progress-bar').style.width = (done / 4 * 100) + '%';
+      if (done === 4) showResults();
+    }
+
+    // Section 1
+    document.getElementById('s1-check').addEventListener('click', () => {
+      const selects = document.querySelectorAll('.s1-select');
+      const vals = Array.from(selects).map(s => s.value === s.dataset.correct);
+      const score = (vals[0] && vals[1] ? 1 : 0) + vals.slice(2).filter(Boolean).length;
+      selects.forEach((sel, i) => {
+        sel.classList.add(vals[i] ? 'correct-answer' : 'incorrect-answer');
+        sel.disabled = true;
+        if (!vals[i]) {
+          const tip = document.createElement('span');
+          tip.className = 'tooltip-incorrect'; tip.style.cssText = 'display:inline-block;margin-left:4px';
+          tip.textContent = '→ ' + sel.dataset.correct;
+          sel.insertAdjacentElement('afterend', tip);
+        }
+      });
+      state.scores.s1 = score;
+      document.getElementById('s1-score').classList.remove('hidden');
+      document.getElementById('s1-score').querySelector('p').textContent = 'You got ' + score + ' / 5 correct.';
+      document.getElementById('s1-check').disabled = true;
+      document.getElementById('s1-reset').classList.remove('hidden');
+      if (score < 5) document.getElementById('s1-reminder').classList.remove('hidden');
+      document.getElementById('badge1').classList.remove('hidden');
+      updateProgress();
+    });
+    document.getElementById('s1-reset').addEventListener('click', () => {
+      document.querySelectorAll('.s1-select').forEach(s => { s.value=''; s.disabled=false; s.classList.remove('correct-answer','incorrect-answer'); });
+      document.querySelectorAll('#section1 .tooltip-incorrect').forEach(t => t.remove());
+      ['s1-score','s1-reminder'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s1-check').disabled = false;
+      document.getElementById('s1-reset').classList.add('hidden');
+      document.getElementById('badge1').classList.add('hidden');
+      state.scores.s1 = null; updateProgress();
+      document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // Section 2
+    const s2Data = {
+      '1': { accepted: ['spoke spanish','could speak spanish'], model: 'spoke Spanish' },
+      '2': { accepted: ['lived closer',"didn't live far away",'lived near me','lived nearby'], model: "didn't live far away" },
+      '3': { accepted: ['had more time'], model: 'had more time' },
+      '4': { accepted: ['were friday','was friday','were the weekend','was the weekend',"weren't monday","wasn't monday"], model: 'were Friday' }
+    };
+    document.querySelectorAll('.s2-hint').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const box = btn.closest('.bg-surface-50').querySelector('.s2-hint-text');
+        box.textContent = '💡 ' + btn.dataset.hint; box.classList.remove('hidden'); btn.style.display = 'none';
+      });
+    });
+    document.getElementById('s2-check').addEventListener('click', () => {
+      let score = 0;
+      document.querySelectorAll('.s2-input').forEach(inp => {
+        const q = inp.dataset.q, val = inp.value.trim().toLowerCase().replace(/\.$/, '');
+        const d = s2Data[q], ok = d.accepted.includes(val);
+        inp.classList.add(ok ? 'correct-answer' : 'incorrect-answer'); inp.readOnly = true;
+        const fb = inp.closest('.bg-surface-50').querySelector('.s2-feedback');
+        fb.innerHTML = ok ? '<span class="tooltip-correct">✓ Correct!</span>'
+          : '<span class="tooltip-incorrect">✗ Model answer: <strong style="color:#16a34a">' + d.model + '</strong></span>';
+        if (ok) score++;
+      });
+      state.scores.s2 = score;
+      document.getElementById('s2-score').classList.remove('hidden');
+      document.getElementById('s2-score').querySelector('p').textContent = 'You got ' + score + ' / 4 correct.';
+      document.getElementById('s2-check').disabled = true;
+      document.getElementById('s2-reset').classList.remove('hidden');
+      if (score < 4) document.getElementById('s2-reminder').classList.remove('hidden');
+      document.getElementById('badge2').classList.remove('hidden');
+      updateProgress();
+    });
+    document.getElementById('s2-reset').addEventListener('click', () => {
+      document.querySelectorAll('.s2-input').forEach(inp => { inp.value=''; inp.readOnly=false; inp.classList.remove('correct-answer','incorrect-answer'); });
+      document.querySelectorAll('#section2 .s2-feedback').forEach(f => f.innerHTML='');
+      document.querySelectorAll('#section2 .s2-hint-text').forEach(h => h.classList.add('hidden'));
+      document.querySelectorAll('.s2-hint').forEach(b => b.style.display='');
+      ['s2-score','s2-reminder'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s2-check').disabled = false;
+      document.getElementById('s2-reset').classList.add('hidden');
+      document.getElementById('badge2').classList.add('hidden');
+      state.scores.s2 = null; updateProgress();
+      document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // Section 3 — click-to-place
+    document.querySelectorAll('.s3-q-block').forEach(block => {
+      const bank = block.querySelector('.word-bank'), zone = block.querySelector('.answer-zone');
+      bank.querySelectorAll('.word-tile').forEach(tile => {
+        tile.addEventListener('click', () => {
+          if (tile.classList.contains('in-answer')) { tile.classList.remove('in-answer'); bank.appendChild(tile); }
+          else { tile.classList.add('in-answer'); zone.appendChild(tile); }
+        });
+      });
+    });
+    document.getElementById('s3-check').addEventListener('click', () => {
+      let score = 0;
+      document.querySelectorAll('.s3-q-block').forEach(block => {
+        const zone = block.querySelector('.answer-zone'), correct = block.dataset.answer;
+        const got = Array.from(zone.querySelectorAll('.word-tile')).map(t => t.dataset.word).join(' ');
+        const ok = got.toLowerCase().trim() === correct.toLowerCase().trim();
+        zone.classList.add(ok ? 'correct-zone' : 'incorrect-zone');
+        block.querySelector('.s3-feedback').innerHTML = ok
+          ? '<span class="tooltip-correct">✓ Correct!</span>'
+          : '<span class="tooltip-incorrect">✗ Correct order: <strong style="color:#16a34a">' + correct + '</strong></span>';
+        block.querySelectorAll('.word-tile').forEach(t => t.style.pointerEvents = 'none');
+        if (ok) score++;
+      });
+      state.scores.s3 = score;
+      document.getElementById('s3-score').classList.remove('hidden');
+      document.getElementById('s3-score').querySelector('p').textContent = 'You got ' + score + ' / 4 correct.';
+      document.getElementById('s3-check').disabled = true;
+      document.getElementById('s3-reset').classList.remove('hidden');
+      document.getElementById('badge3').classList.remove('hidden');
+      updateProgress();
+    });
+    document.getElementById('s3-reset').addEventListener('click', () => {
+      document.querySelectorAll('.s3-q-block').forEach(block => {
+        const bank = block.querySelector('.word-bank'), zone = block.querySelector('.answer-zone');
+        zone.querySelectorAll('.word-tile').forEach(t => { t.classList.remove('in-answer'); t.style.pointerEvents=''; bank.appendChild(t); });
+        bank.querySelectorAll('.word-tile').forEach(t => t.style.pointerEvents='');
+        zone.classList.remove('correct-zone','incorrect-zone');
+        block.querySelector('.s3-feedback').innerHTML = '';
+      });
+      ['s3-score'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s3-check').disabled = false;
+      document.getElementById('s3-reset').classList.add('hidden');
+      document.getElementById('badge3').classList.add('hidden');
+      state.scores.s3 = null; updateProgress();
+      document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // Section 4
+    document.querySelectorAll('.s4-q-block').forEach(block => {
+      block.querySelectorAll('.mc-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          block.querySelectorAll('.mc-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected'); block.dataset.selected = opt.dataset.value;
+        });
+      });
+    });
+    document.getElementById('s4-check').addEventListener('click', () => {
+      let score = 0;
+      document.querySelectorAll('.s4-q-block').forEach(block => {
+        const correct = block.dataset.correct, selected = block.dataset.selected || '';
+        block.querySelectorAll('.mc-option').forEach(opt => {
+          opt.classList.add('checked');
+          if (opt.dataset.value === correct) { opt.classList.add('correct-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#16a34a'; m.textContent='✓'; opt.appendChild(m); }
+          if (opt.dataset.value === selected && selected !== correct) { opt.classList.add('incorrect-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#dc2626'; m.textContent='✗'; opt.appendChild(m); }
+        });
+        if (selected === correct) score++;
+      });
+      state.scores.s4 = score;
+      document.getElementById('s4-score').classList.remove('hidden');
+      document.getElementById('s4-score').querySelector('p').textContent = 'You got ' + score + ' / 5 correct.';
+      document.getElementById('s4-check').disabled = true;
+      document.getElementById('s4-reset').classList.remove('hidden');
+      if (score < 5) document.getElementById('s4-reminder').classList.remove('hidden');
+      document.getElementById('badge4').classList.remove('hidden');
+      updateProgress();
+    });
+    document.getElementById('s4-reset').addEventListener('click', () => {
+      document.querySelectorAll('.s4-q-block').forEach(block => {
+        delete block.dataset.selected;
+        block.querySelectorAll('.mc-option').forEach(opt => { opt.classList.remove('selected','correct-choice','incorrect-choice','checked'); opt.querySelectorAll('.ml-2').forEach(m=>m.remove()); });
+        block.querySelector('.s4-feedback').innerHTML = '';
+      });
+      ['s4-score','s4-reminder'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s4-check').disabled = false;
+      document.getElementById('s4-reset').classList.add('hidden');
+      document.getElementById('badge4').classList.add('hidden');
+      state.scores.s4 = null; updateProgress();
+      document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // Results
+    function showResults() {
+      const panel = document.getElementById('results-panel');
+      panel.classList.remove('hidden');
+      ['s1','s2','s3','s4'].forEach(k => document.getElementById('res-'+k).textContent = state.scores[k]);
+      const total = Object.values(state.scores).reduce((a,b) => a+b, 0);
+      document.getElementById('res-total').textContent = total;
+      document.getElementById('results-message').textContent = total >= 16
+        ? '🌟 Excellent! You\'ve got a strong grasp of all four structures. Well done!'
+        : total >= 11 ? '👍 Good work! Review the structures where you made errors and try again.'
+        : '📖 Keep practising! Click \'Try Again\' on any section to redo it.';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    document.getElementById('reset-all-btn').addEventListener('click', () => {
+      ['s1','s2','s3','s4'].forEach(k => document.getElementById(k+'-reset').click());
+      document.getElementById('results-panel').classList.add('hidden');
+      document.querySelectorAll('.tab-btn').forEach((b,i) => { b.classList.toggle('active', i===0); });
+      document.querySelectorAll('.section-panel').forEach((p,i) => { p.classList.toggle('active', i===0); });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
