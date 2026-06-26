@@ -1,580 +1,637 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hypothetical Situations – Controlled Practice</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
-              correct:'#16a34a','correct-bg':'#dcfce7',incorrect:'#dc2626','incorrect-bg':'#fee2e2',hint:'#d97706','hint-bg':'#fffbeb',
-              surface:{ 50:'#fafafa',100:'#f5f5f5',200:'#e5e5e5',300:'#d4d4d4',400:'#a3a3a3',500:'#737373',600:'#525252',700:'#404040',800:'#262626',900:'#171717' },
-            },
-            fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
-          },
-        },
-      };
-    </script>
-    <style>
-      :root { --primary:#4f46e5;--primary-light:#eef2ff;--primary-dark:#3730a3;--correct:#16a34a;--correct-bg:#dcfce7;--incorrect:#dc2626;--incorrect-bg:#fee2e2;--hint:#d97706; }
-      * { box-sizing:border-box; }
-      body { font-family:'Inter',system-ui,sans-serif;background:#fff;color:#262626;margin:0; }
-      .tab-btn { transition:all 0.2s ease; }
-      .tab-btn.active { background:var(--primary);color:white; }
-      .tab-btn:not(.active):hover { background:var(--primary-light);color:var(--primary); }
-      .section-panel { display:none;animation:fadeIn 0.3s ease; }
-      .section-panel.active { display:block; }
-      @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-      select { appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.6rem center;padding-right:2rem; }
-      .answer-select { border:2px solid #d4d4d4;border-radius:0.5rem;padding:0.4rem 2rem 0.4rem 0.6rem;font-size:0.95rem;font-family:'Inter',sans-serif;font-weight:500;background-color:#fafafa;transition:border-color 0.2s;min-width:140px; }
-      .answer-select:focus { outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.15); }
-      .answer-select.correct-answer { border-color:var(--correct)!important;background-color:var(--correct-bg)!important; }
-      .answer-select.incorrect-answer { border-color:var(--incorrect)!important;background-color:var(--incorrect-bg)!important; }
-      .mc-option { border:2px solid #e5e5e5;border-radius:0.75rem;padding:0.75rem 1rem;cursor:pointer;transition:all 0.2s ease;font-size:0.95rem; }
-      .mc-option:hover:not(.checked) { border-color:var(--primary);background:var(--primary-light); }
-      .mc-option.selected { border-color:var(--primary);background:var(--primary-light); }
-      .mc-option.correct-choice { border-color:var(--correct)!important;background-color:var(--correct-bg)!important; }
-      .mc-option.incorrect-choice { border-color:var(--incorrect)!important;background-color:var(--incorrect-bg)!important; }
-      .mc-option.checked { pointer-events:none; }
-      .word-tile { display:inline-flex;align-items:center;padding:0.5rem 1rem;border-radius:0.5rem;background:var(--primary-light);color:var(--primary);font-weight:600;font-size:0.9rem;cursor:pointer;user-select:none;transition:all 0.15s ease;border:2px solid transparent; }
-      .word-tile:hover { background:#c7d2fe; }
-      .word-tile.in-answer { background:var(--primary);color:white; }
-      .answer-zone { min-height:52px;border:2px dashed #d4d4d4;border-radius:0.75rem;padding:0.5rem;display:flex;flex-wrap:wrap;gap:0.4rem;align-items:center;transition:border-color 0.2s;background:#fafafa; }
-      .answer-zone.correct-zone { border-color:var(--correct)!important;border-style:solid;background:var(--correct-bg)!important; }
-      .answer-zone.incorrect-zone { border-color:var(--incorrect)!important;border-style:solid;background:var(--incorrect-bg)!important; }
-      .grammar-reminder { border-left:4px solid var(--primary);background:var(--primary-light);padding:1rem 1.25rem;border-radius:0 0.75rem 0.75rem 0;margin-top:1.5rem; }
-      .verb-box { background:#fffbeb;border:1px solid #fde68a;border-radius:0.75rem;padding:1rem 1.25rem; }
-      .check-btn { background:var(--primary);color:white;border:none;padding:0.65rem 1.5rem;border-radius:0.75rem;font-weight:600;font-size:0.95rem;cursor:pointer;transition:background 0.2s;font-family:'Inter',sans-serif; }
-      .check-btn:hover { background:var(--primary-dark); }
-      .check-btn:disabled { opacity:0.5;cursor:not-allowed; }
-      .reset-btn { background:#f5f5f5;color:#525252;border:2px solid #e5e5e5;padding:0.55rem 1.25rem;border-radius:0.75rem;font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif; }
-      .reset-btn:hover { background:#e5e5e5; }
-      .badge-check { background:var(--correct);color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:4px; }
-      .tooltip-correct { font-size:0.8rem;color:var(--correct);font-weight:500;margin-top:0.2rem; }
-      .tooltip-incorrect { font-size:0.8rem;color:var(--incorrect);font-weight:500;margin-top:0.2rem; }
-      .progress-bar-bg { background:#e5e5e5;border-radius:999px;height:8px;overflow:hidden; }
-      .progress-bar-fill { background:var(--primary);height:100%;border-radius:999px;transition:width 0.5s ease; }
-      .error-option { border:2px solid #e5e5e5;border-radius:0.5rem;padding:0.4rem 0.8rem;cursor:pointer;transition:all 0.2s;font-weight:600;display:inline-block;margin:0 2px; }
-      .error-option:hover:not(.checked) { border-color:var(--primary);background:var(--primary-light); }
-      .error-option.selected { border-color:var(--primary);background:var(--primary-light); }
-      .error-option.correct-choice { border-color:var(--correct)!important;background-color:var(--correct-bg)!important; }
-      .error-option.incorrect-choice { border-color:var(--incorrect)!important;background-color:var(--incorrect-bg)!important; }
-      .error-option.checked { pointer-events:none; }
-      .results-table td,.results-table th { padding:0.6rem 1rem;text-align:left; }
-      @media(max-width:640px){ .tab-btn{font-size:0.72rem;padding:0.4rem 0.5rem} .answer-select{min-width:110px;font-size:0.85rem} }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hypothetical Situations – Controlled Practice</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--pri:#4f46e5;--pri-lt:#eef2ff;--pri-dk:#3730a3;--ok:#16a34a;--ok-bg:#dcfce7;--err:#dc2626;--err-bg:#fee2e2;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#f8f8ff;color:#1a1a1a;}
+.tab-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;}
+.tab{flex-shrink:0;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;font-weight:600;background:#e0e7ff;color:var(--pri);transition:all .2s;}
+.tab.active{background:var(--pri);color:#fff;}
+.tab:hover:not(.active){background:#c7d2fe;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:#fff;border-radius:12px;padding:18px 20px;margin-bottom:14px;border:1px solid #e5e7eb;}
+.ans-sel{border:2px solid #d1d5db;border-radius:6px;padding:5px 28px 5px 8px;font-size:.92rem;font-weight:500;background:#fafafa;min-width:140px;cursor:pointer;}
+.ans-sel:focus{outline:none;border-color:var(--pri);}
+.ans-sel.correct{border-color:var(--ok)!important;background:var(--ok-bg)!important;}
+.ans-sel.wrong{border-color:var(--err)!important;background:var(--err-bg)!important;}
+.err-opt{display:inline-block;border:2px solid #d1d5db;border-radius:6px;padding:4px 10px;margin:2px;cursor:pointer;font-weight:600;transition:all .2s;}
+.err-opt:hover{border-color:var(--pri);background:var(--pri-lt);}
+.err-opt.picked{border-color:var(--pri);background:var(--pri-lt);}
+.err-opt.correct{border-color:var(--ok)!important;background:var(--ok-bg)!important;}
+.err-opt.wrong{border-color:var(--err)!important;background:var(--err-bg)!important;}
+.err-opt.locked{pointer-events:none;}
+.mc-opt{border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;margin-bottom:8px;cursor:pointer;transition:all .2s;font-size:.93rem;}
+.mc-opt:hover:not(.locked){border-color:var(--pri);background:var(--pri-lt);}
+.mc-opt.picked{border-color:var(--pri);background:var(--pri-lt);}
+.mc-opt.correct{border-color:var(--ok)!important;background:var(--ok-bg)!important;}
+.mc-opt.wrong{border-color:var(--err)!important;background:var(--err-bg)!important;}
+.mc-opt.locked{pointer-events:none;}
+.tile-bank{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.tile{display:inline-flex;align-items:center;padding:6px 12px;border-radius:6px;background:var(--pri-lt);color:var(--pri);font-weight:700;font-size:.88rem;cursor:pointer;user-select:none;border:2px solid transparent;transition:all .15s;}
+.tile:hover{background:#c7d2fe;}
+.tile.used{background:var(--pri);color:#fff;}
+.drop-zone{min-height:48px;border:2px dashed #d1d5db;border-radius:10px;padding:6px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;background:#fafafa;}
+.drop-zone.correct{border-color:var(--ok);border-style:solid;background:var(--ok-bg);}
+.drop-zone.wrong{border-color:var(--err);border-style:solid;background:var(--err-bg);}
+.fb{font-size:.82rem;font-weight:600;margin-top:6px;}
+.fb.ok{color:var(--ok);}
+.fb.err{color:var(--err);}
+.btn-check{background:var(--pri);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;margin-top:16px;}
+.btn-check:hover{background:var(--pri-dk);}
+.btn-check:disabled{opacity:.45;cursor:not-allowed;}
+.btn-reset{background:#f3f4f6;color:#374151;border:2px solid #e5e7eb;padding:8px 18px;border-radius:10px;font-weight:600;font-size:.88rem;cursor:pointer;margin-top:16px;margin-left:8px;}
+.btn-reset:hover{background:#e5e7eb;}
+.score-box{margin-top:14px;padding:12px 16px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;font-weight:700;font-size:.95rem;color:#166534;}
+.reminder{margin-top:14px;border-left:4px solid var(--pri);background:var(--pri-lt);padding:12px 16px;border-radius:0 10px 10px 0;font-size:.88rem;color:#312e81;}
+.form-ref{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-top:20px;font-size:.85rem;}
+.verb-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;font-size:.83rem;margin-bottom:16px;}
+.prog-bg{background:#e5e7eb;border-radius:999px;height:7px;overflow:hidden;margin-top:8px;}
+.prog-fill{background:var(--pri);height:100%;border-radius:999px;transition:width .5s;}
+.results{background:#eef2ff;border-radius:16px;padding:28px;margin-top:24px;border:1px solid #c7d2fe;display:none;}
+.results table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;font-size:.9rem;}
+.results th{background:var(--pri);color:#fff;padding:10px 14px;text-align:left;}
+.results td{padding:10px 14px;border-bottom:1px solid #f3f4f6;}
+.results tfoot td{font-weight:700;background:#f8f8ff;}
+.sec-header{background:var(--pri);color:#fff;border-radius:12px 12px 0 0;padding:16px 20px;}
+.sec-sub{background:#eef2ff;padding:10px 20px;border-radius:0 0 10px 10px;margin-bottom:16px;font-size:.88rem;color:#3730a3;font-weight:600;}
+.badge{display:inline-block;background:var(--ok);color:#fff;border-radius:50%;width:16px;height:16px;text-align:center;line-height:16px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;}
+@media(max-width:600px){.ans-sel{min-width:110px;font-size:.82rem;}.tab{font-size:.75rem;padding:6px 10px;}}
+</style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
-  <!-- HEADER -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
-    <div class="max-w-4xl mx-auto px-4 md:px-6 py-4">
-      <div class="flex items-center justify-between mb-3">
-        <div>
-          <h1 class="text-xl md:text-2xl font-bold text-gray-900">Hypothetical Situations</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Controlled Practice — B1 Level</p>
-        </div>
-        <span id="progress-text" class="text-xs font-semibold text-indigo-600">0 / 4 sections</span>
+<header style="background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50;padding:14px 16px;">
+  <div style="max-width:860px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h1 style="font-size:1.25rem;font-weight:800;color:#1e1b4b;">Hypothetical Situations</h1>
+        <p style="font-size:.8rem;color:#6b7280;margin-top:2px;">Controlled Practice — B1 Level</p>
       </div>
-      <div class="progress-bar-bg"><div id="progress-bar" class="progress-bar-fill" style="width:0%"></div></div>
+      <span id="prog-text" style="font-size:.78rem;font-weight:700;color:var(--pri);">0 / 4 done</span>
     </div>
-    <div class="max-w-4xl mx-auto px-4 md:px-6 pb-0">
-      <div class="flex gap-1.5 overflow-x-auto pb-3">
-        <button class="tab-btn active px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section1">1: If…would <span class="badge-check hidden" id="badge1">✓</span></button>
-        <button class="tab-btn px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section2">2: I wish <span class="badge-check hidden" id="badge2">✓</span></button>
-        <button class="tab-btn px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section3">3: Would…if <span class="badge-check hidden" id="badge3">✓</span></button>
-        <button class="tab-btn px-3 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap" data-tab="section4">4: It's time <span class="badge-check hidden" id="badge4">✓</span></button>
-      </div>
+    <div class="prog-bg"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="tab-bar" style="margin-top:10px;">
+      <button class="tab active" data-tab="s1">1: If…would <span class="badge" id="b1" style="display:none">✓</span></button>
+      <button class="tab" data-tab="s2">2: I wish <span class="badge" id="b2" style="display:none">✓</span></button>
+      <button class="tab" data-tab="s3">3: Would…if <span class="badge" id="b3" style="display:none">✓</span></button>
+      <button class="tab" data-tab="s4">4: It's time <span class="badge" id="b4" style="display:none">✓</span></button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-6">
+<main style="max-width:860px;margin:0 auto;padding:20px 16px;">
 
-    <!-- ===== SECTION 1 ===== -->
-    <div id="section1" class="section-panel active">
-      <div class="rounded-xl overflow-hidden mb-6">
-        <div class="bg-indigo-600 text-white px-5 py-3">
-          <h2 class="text-lg font-semibold">Structure 1: If + past simple → would + base verb</h2>
-          <p class="text-sm text-indigo-200 mt-0.5">These sentences describe imaginary situations.</p>
-        </div>
-        <div class="bg-indigo-50 px-5 py-3 border-b border-indigo-100">
-          <p class="text-sm font-medium text-indigo-800"><strong>FORM:</strong> If + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">past simple</span> , would + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">base verb</span></p>
-        </div>
-      </div>
-      <div class="verb-box mb-6">
-        <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--hint)">📖 Irregular Verb Reference</p>
-        <p class="text-sm text-gray-700">go → went | have → had | be → were | can → could | speak → spoke | live → lived | find → found | lose → lost | work → worked | learn → learned | leave → left | stop → stopped | face → faced | forget → forgot | understand → understood</p>
-      </div>
+<!-- SECTION 1 -->
+<div id="s1" class="panel active">
+  <div class="sec-header">
+    <h2 style="font-size:1.05rem;font-weight:700;">Structure 1: If + past simple → would + base verb</h2>
+    <p style="font-size:.82rem;opacity:.85;margin-top:3px;">These sentences describe imaginary / unreal situations in the present.</p>
+  </div>
+  <div class="sec-sub"><strong>FORM:</strong> If + [past simple] , would + [base verb]</div>
+  <div class="verb-box">
+    <strong style="color:#92400e;">📖 Verb Reference:</strong>
+    have → had &nbsp;|&nbsp; be → were &nbsp;|&nbsp; find → found &nbsp;|&nbsp; live → lived &nbsp;|&nbsp; work → worked &nbsp;|&nbsp; go → went &nbsp;|&nbsp; lose → lost
+  </div>
 
-      <h3 class="text-sm font-bold text-indigo-700 uppercase tracking-wide mb-3">Exercise A — Gap-fill (choose the correct verb form)</h3>
-      <div class="space-y-5">
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 1</p>
-          <p class="text-base text-gray-800 leading-relaxed">"If I <select class="answer-select s1-select" data-correct="had"><option value="">—</option><option>had</option><option>have</option><option>will have</option><option>would have</option></select> more time, I would learn Italian."</p>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 2</p>
-          <p class="text-base text-gray-800 leading-relaxed">"She would travel more if she <select class="answer-select s1-select" data-correct="didn't work"><option value="">—</option><option>didn't work</option><option>doesn't work</option><option>won't work</option><option>wouldn't work</option></select> so much."</p>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 3</p>
-          <p class="text-base text-gray-800 leading-relaxed">"If we <select class="answer-select s1-select" data-correct="lived"><option value="">—</option><option>lived</option><option>live</option><option>will live</option><option>would live</option></select> near the ocean, we would go swimming every day."</p>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 4</p>
-          <p class="text-base text-gray-800 leading-relaxed">"What would you do if you <select class="answer-select s1-select" data-correct="found"><option value="">—</option><option>found</option><option>find</option><option>would find</option><option>will find</option></select> a wallet full of money?"</p>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 5</p>
-          <p class="text-base text-gray-800 leading-relaxed">"If I <select class="answer-select s1-select" data-correct="were"><option value="">—</option><option>were</option><option>am</option><option>will be</option><option>would be</option></select> the teacher, I would give less homework."</p>
-        </div>
-      </div>
+  <h3 style="font-size:.82rem;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Exercise A — Gap-fill: choose the correct verb form</h3>
+  <div class="card">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 1</p>
+    <p style="font-size:.97rem;line-height:2;">"If I <select class="ans-sel s1sel" data-ans="had"><option value="">—</option><option>had</option><option>have</option><option>will have</option><option>would have</option></select> more time, I would learn Italian."</p>
+    <div class="fb" id="f1q1"></div>
+  </div>
+  <div class="card">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 2</p>
+    <p style="font-size:.97rem;line-height:2;">"She would travel more if she <select class="ans-sel s1sel" data-ans="didn't work"><option value="">—</option><option>didn't work</option><option>doesn't work</option><option>won't work</option><option>wouldn't work</option></select> so much."</p>
+    <div class="fb" id="f1q2"></div>
+  </div>
+  <div class="card">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 3</p>
+    <p style="font-size:.97rem;line-height:2;">"If we <select class="ans-sel s1sel" data-ans="lived"><option value="">—</option><option>lived</option><option>live</option><option>will live</option><option>would live</option></select> near the ocean, we would go swimming every day."</p>
+    <div class="fb" id="f1q3"></div>
+  </div>
+  <div class="card">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 4</p>
+    <p style="font-size:.97rem;line-height:2;">"What would you do if you <select class="ans-sel s1sel" data-ans="found"><option value="">—</option><option>found</option><option>find</option><option>would find</option><option>will find</option></select> a wallet full of money?"</p>
+    <div class="fb" id="f1q4"></div>
+  </div>
+  <div class="card">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 5</p>
+    <p style="font-size:.97rem;line-height:2;">"If I <select class="ans-sel s1sel" data-ans="were"><option value="">—</option><option>were</option><option>am</option><option>will be</option><option>would be</option></select> the teacher, I would give less homework."</p>
+    <div class="fb" id="f1q5"></div>
+  </div>
 
-      <h3 class="text-sm font-bold text-indigo-700 uppercase tracking-wide mb-3 mt-8">Exercise B — Error correction (choose the correct form)</h3>
-      <div class="space-y-5">
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s1-error-block" data-correct="had">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 6</p>
-          <p class="text-base text-gray-800">"If I <span class="error-option" data-value="will have">will have</span> <span class="error-option" data-value="had">had</span> more money, I would buy a new laptop."</p>
-          <div class="s1b-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s1-error-block" data-correct="would pass">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 7</p>
-          <p class="text-base text-gray-800">"If she studied harder, she <span class="error-option" data-value="would passes">would passes</span> <span class="error-option" data-value="would pass">would pass</span> the exam."</p>
-          <div class="s1b-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s1-error-block" data-correct="were">
-          <p class="text-sm font-semibold text-gray-500 mb-2">Question 8</p>
-          <p class="text-base text-gray-800">"If I <span class="error-option" data-value="am">am</span> <span class="error-option" data-value="were">were</span> you, I would apologise."</p>
-          <div class="s1b-feedback mt-2"></div>
-        </div>
-      </div>
+  <h3 style="font-size:.82rem;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.05em;margin:20px 0 10px;">Exercise B — Error correction: click the correct form</h3>
+  <div class="card" id="e1b1" data-ans="had">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 6</p>
+    <p style="font-size:.97rem;">"If I <span class="err-opt" data-val="will have">will have</span> <span class="err-opt" data-val="had">had</span> more money, I would buy a new laptop."</p>
+    <div class="fb" id="f1q6"></div>
+  </div>
+  <div class="card" id="e1b2" data-ans="would pass">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 7</p>
+    <p style="font-size:.97rem;">"If she studied harder, she <span class="err-opt" data-val="would passes">would passes</span> <span class="err-opt" data-val="would pass">would pass</span> the exam."</p>
+    <div class="fb" id="f1q7"></div>
+  </div>
+  <div class="card" id="e1b3" data-ans="were">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:6px;">Question 8</p>
+    <p style="font-size:.97rem;">"If I <span class="err-opt" data-val="am">am</span> <span class="err-opt" data-val="were">were</span> you, I would apologise."</p>
+    <div class="fb" id="f1q8"></div>
+  </div>
 
-      <div class="flex flex-wrap gap-3 mt-6">
-        <button class="check-btn" id="s1-check">Check Answers</button>
-        <button class="reset-btn hidden" id="s1-reset">Try Again</button>
-      </div>
-      <div id="s1-score" class="mt-4 hidden"><p class="text-base font-semibold text-gray-800"></p></div>
-      <div id="s1-reminder" class="grammar-reminder hidden">
-        <p class="text-sm font-semibold text-indigo-800 mb-1">💡 Grammar Reminder</p>
-        <p class="text-sm text-indigo-700">Remember: <strong>IF + past simple</strong> (NOT will). Result clause: <strong>WOULD + base verb</strong> (no -s, no -ed).</p>
-      </div>
-      <div class="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <p class="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">📚 Form Reference — All 4 Structures</p>
-        <div class="space-y-1 text-sm text-gray-700">
-          <p><strong class="text-indigo-700">S1:</strong> If + <em>past simple</em> , would + <em>base verb</em></p>
-          <p><strong class="text-indigo-700">S2:</strong> I wish + <em>past simple</em></p>
-          <p><strong class="text-indigo-700">S3:</strong> What + would + subject + do + if + <em>past simple</em>?</p>
-          <p><strong class="text-indigo-700">S4:</strong> It's time + subject + <em>past simple</em></p>
-        </div>
-        <p class="mt-2 text-sm font-bold text-indigo-800">🔑 Past form after if / wish / it's time = <strong>IMAGINARY</strong>, not past time!</p>
-      </div>
+  <div>
+    <button class="btn-check" id="s1-check">Check Answers</button>
+    <button class="btn-reset" id="s1-reset" style="display:none;">Try Again</button>
+  </div>
+  <div id="s1-score" style="display:none;" class="score-box"></div>
+  <div id="s1-remind" class="reminder" style="display:none;">💡 <strong>Remember:</strong> IF + past simple (NOT will/would). Result: WOULD + base verb (no -s, no -ed).</div>
+  <div class="form-ref">
+    <strong style="color:var(--pri);font-size:.8rem;">📚 ALL 4 STRUCTURES</strong><br><br>
+    <strong>S1:</strong> If + [past simple] , would + [base verb]<br>
+    <strong>S2:</strong> I wish + [past simple]<br>
+    <strong>S3:</strong> What + would + subject + do + if + [past simple]?<br>
+    <strong>S4:</strong> It's time + subject + [past simple]<br><br>
+    <strong style="color:var(--pri);">🔑 Past form after if / wish / it's time = IMAGINARY, not past time!</strong>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div id="s2" class="panel">
+  <div class="sec-header">
+    <h2 style="font-size:1.05rem;font-weight:700;">Structure 2: I wish + past simple</h2>
+    <p style="font-size:.82rem;opacity:.85;margin-top:3px;">Expresses a desire for something to be different right now.</p>
+  </div>
+  <div class="sec-sub"><strong>FORM:</strong> I wish + [past simple verb] + subordinate clause</div>
+
+  <h3 style="font-size:.82rem;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Exercise A — Choose the correct sentence</h3>
+  <div class="card" id="s2b1" data-ans="B">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 1 — Which sentence is correct?</p>
+    <div class="mc-opt" data-val="A"><strong style="color:#9ca3af;margin-right:6px;">A.</strong> I wish I live in a bigger house.</div>
+    <div class="mc-opt" data-val="B"><strong style="color:#9ca3af;margin-right:6px;">B.</strong> I wish I lived in a bigger house.</div>
+    <div class="mc-opt" data-val="C"><strong style="color:#9ca3af;margin-right:6px;">C.</strong> I wish I would live in a bigger house.</div>
+    <div class="mc-opt" data-val="D"><strong style="color:#9ca3af;margin-right:6px;">D.</strong> I wish I will live in a bigger house.</div>
+    <div class="fb" id="f2q1"></div>
+  </div>
+  <div class="card" id="s2b2" data-ans="C">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 2 — Which sentence is correct?</p>
+    <div class="mc-opt" data-val="A"><strong style="color:#9ca3af;margin-right:6px;">A.</strong> She wishes she has more friends.</div>
+    <div class="mc-opt" data-val="B"><strong style="color:#9ca3af;margin-right:6px;">B.</strong> She wishes she would have more friends.</div>
+    <div class="mc-opt" data-val="C"><strong style="color:#9ca3af;margin-right:6px;">C.</strong> She wishes she had more friends.</div>
+    <div class="mc-opt" data-val="D"><strong style="color:#9ca3af;margin-right:6px;">D.</strong> She wishes she will have more friends.</div>
+    <div class="fb" id="f2q2"></div>
+  </div>
+
+  <div>
+    <button class="btn-check" id="s2-check">Check Answers</button>
+    <button class="btn-reset" id="s2-reset" style="display:none;">Try Again</button>
+  </div>
+  <div id="s2-score" style="display:none;" class="score-box"></div>
+  <div id="s2-remind" class="reminder" style="display:none;">💡 <strong>Remember:</strong> I wish + PAST SIMPLE. Never use 'will' or present simple after 'wish'.</div>
+  <div class="form-ref">
+    <strong style="color:var(--pri);font-size:.8rem;">📚 ALL 4 STRUCTURES</strong><br><br>
+    <strong>S1:</strong> If + [past simple] , would + [base verb]<br>
+    <strong>S2:</strong> I wish + [past simple]<br>
+    <strong>S3:</strong> What + would + subject + do + if + [past simple]?<br>
+    <strong>S4:</strong> It's time + subject + [past simple]<br><br>
+    <strong style="color:var(--pri);">🔑 Past form after if / wish / it's time = IMAGINARY, not past time!</strong>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div id="s3" class="panel">
+  <div class="sec-header">
+    <h2 style="font-size:1.05rem;font-weight:700;">Structure 3: What would you do if + past simple?</h2>
+    <p style="font-size:.82rem;opacity:.85;margin-top:3px;">Asks about an imaginary / unreal scenario.</p>
+  </div>
+  <div class="sec-sub"><strong>FORM:</strong> What + would + subject + do + if + [past simple]?</div>
+
+  <h3 style="font-size:.82rem;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Exercise A — Word order: click tiles to build the sentence</h3>
+  <div class="card" id="s3q1" data-ans="What would you do if you lost your phone ?">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 1</p>
+    <div class="tile-bank">
+      <span class="tile" data-w="do">do</span><span class="tile" data-w="would">would</span><span class="tile" data-w="if">if</span><span class="tile" data-w="What">What</span><span class="tile" data-w="your">your</span><span class="tile" data-w="lost">lost</span><span class="tile" data-w="you">you</span><span class="tile" data-w="phone">phone</span><span class="tile" data-w="you">you</span><span class="tile" data-w="?">?</span>
     </div>
-
-    <!-- ===== SECTION 2 ===== -->
-    <div id="section2" class="section-panel">
-      <div class="rounded-xl overflow-hidden mb-6">
-        <div class="bg-indigo-600 text-white px-5 py-3">
-          <h2 class="text-lg font-semibold">Structure 2: I wish + past simple</h2>
-          <p class="text-sm text-indigo-200 mt-0.5">Use 'I wish' to express a desire for things to be different right now.</p>
-        </div>
-        <div class="bg-indigo-50 px-5 py-3 border-b border-indigo-100">
-          <p class="text-sm font-medium text-indigo-800"><strong>FORM:</strong> I wish + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">past simple verb</span> + subordinate clause</p>
-        </div>
-      </div>
-
-      <h3 class="text-sm font-bold text-indigo-700 uppercase tracking-wide mb-3">Exercise A — Choose the correct form</h3>
-      <div class="space-y-5">
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s2-mc-block" data-correct="B">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 1</p>
-          <div class="space-y-2">
-            <div class="mc-option" data-value="A"><span class="font-semibold text-gray-400 mr-2">A.</span> I wish I live in a bigger house.</div>
-            <div class="mc-option" data-value="B"><span class="font-semibold text-gray-400 mr-2">B.</span> I wish I lived in a bigger house.</div>
-            <div class="mc-option" data-value="C"><span class="font-semibold text-gray-400 mr-2">C.</span> I wish I would live in a bigger house.</div>
-            <div class="mc-option" data-value="D"><span class="font-semibold text-gray-400 mr-2">D.</span> I wish I will live in a bigger house.</div>
-          </div>
-          <div class="s2-mc-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s2-mc-block" data-correct="C">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 2</p>
-          <div class="space-y-2">
-            <div class="mc-option" data-value="A"><span class="font-semibold text-gray-400 mr-2">A.</span> She wishes she has more friends.</div>
-            <div class="mc-option" data-value="B"><span class="font-semibold text-gray-400 mr-2">B.</span> She wishes she would have more friends.</div>
-            <div class="mc-option" data-value="C"><span class="font-semibold text-gray-400 mr-2">C.</span> She wishes she had more friends.</div>
-            <div class="mc-option" data-value="D"><span class="font-semibold text-gray-400 mr-2">D.</span> She wishes she will have more friends.</div>
-          </div>
-          <div class="s2-mc-feedback mt-2"></div>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-3 mt-6">
-        <button class="check-btn" id="s2-check">Check Answers</button>
-        <button class="reset-btn hidden" id="s2-reset">Try Again</button>
-      </div>
-      <div id="s2-score" class="mt-4 hidden"><p class="text-base font-semibold text-gray-800"></p></div>
-      <div id="s2-reminder" class="grammar-reminder hidden">
-        <p class="text-sm font-semibold text-indigo-800 mb-1">💡 Grammar Reminder</p>
-        <p class="text-sm text-indigo-700">Remember: <strong>I wish + PAST SIMPLE</strong>. This shows the situation is <strong>NOT real now</strong>. Never use 'will' or present simple after 'wish'.</p>
-      </div>
-      <div class="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <p class="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">📚 Form Reference — All 4 Structures</p>
-        <div class="space-y-1 text-sm text-gray-700">
-          <p><strong class="text-indigo-700">S1:</strong> If + <em>past simple</em> , would + <em>base verb</em></p>
-          <p><strong class="text-indigo-700">S2:</strong> I wish + <em>past simple</em></p>
-          <p><strong class="text-indigo-700">S3:</strong> What + would + subject + do + if + <em>past simple</em>?</p>
-          <p><strong class="text-indigo-700">S4:</strong> It's time + subject + <em>past simple</em></p>
-        </div>
-        <p class="mt-2 text-sm font-bold text-indigo-800">🔑 Past form after if / wish / it's time = <strong>IMAGINARY</strong>, not past time!</p>
-      </div>
+    <p style="font-size:.75rem;color:#9ca3af;margin-bottom:4px;">Your answer:</p>
+    <div class="drop-zone"></div>
+    <div class="fb" id="f3q1"></div>
+  </div>
+  <div class="card" id="s3q2" data-ans="What would you do if you had a million dollars ?">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 2</p>
+    <div class="tile-bank">
+      <span class="tile" data-w="if">if</span><span class="tile" data-w="would">would</span><span class="tile" data-w="you">you</span><span class="tile" data-w="do">do</span><span class="tile" data-w="had">had</span><span class="tile" data-w="a">a</span><span class="tile" data-w="What">What</span><span class="tile" data-w="you">you</span><span class="tile" data-w="million">million</span><span class="tile" data-w="dollars">dollars</span><span class="tile" data-w="?">?</span>
     </div>
-
-    <!-- ===== SECTION 3 ===== -->
-    <div id="section3" class="section-panel">
-      <div class="rounded-xl overflow-hidden mb-6">
-        <div class="bg-indigo-600 text-white px-5 py-3">
-          <h2 class="text-lg font-semibold">Structure 3: What would you do if + past simple?</h2>
-          <p class="text-sm text-indigo-200 mt-0.5">Put the words in the correct order to build each question.</p>
-        </div>
-        <div class="bg-indigo-50 px-5 py-3 border-b border-indigo-100">
-          <p class="text-sm font-medium text-indigo-800"><strong>FORM:</strong> What + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">would</span> + subject + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">do</span> + if + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">past simple</span>?</p>
-        </div>
-      </div>
-
-      <h3 class="text-sm font-bold text-indigo-700 uppercase tracking-wide mb-3">Exercise A — Word order (click tiles to build the sentence)</h3>
-      <div class="space-y-6">
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s3-q-block" data-answer="What would you do if you lost your phone?">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 1</p>
-          <div class="word-bank flex flex-wrap gap-2 mb-3">
-            <span class="word-tile" data-word="do">do</span><span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="if">if</span><span class="word-tile" data-word="What">What</span><span class="word-tile" data-word="your">your</span><span class="word-tile" data-word="lost">lost</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="phone">phone</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="?">?</span>
-          </div>
-          <p class="text-xs text-gray-400 mb-1.5">Your answer:</p>
-          <div class="answer-zone"></div>
-          <div class="s3-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s3-q-block" data-answer="What would you do if you had a million dollars?">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 2</p>
-          <div class="word-bank flex flex-wrap gap-2 mb-3">
-            <span class="word-tile" data-word="if">if</span><span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="do">do</span><span class="word-tile" data-word="had">had</span><span class="word-tile" data-word="a">a</span><span class="word-tile" data-word="What">What</span><span class="word-tile" data-word="you">you</span><span class="word-tile" data-word="million">million</span><span class="word-tile" data-word="dollars">dollars</span><span class="word-tile" data-word="?">?</span>
-          </div>
-          <p class="text-xs text-gray-400 mb-1.5">Your answer:</p>
-          <div class="answer-zone"></div>
-          <div class="s3-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s3-q-block" data-answer="What would she do if she lost her job?">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 3</p>
-          <div class="word-bank flex flex-wrap gap-2 mb-3">
-            <span class="word-tile" data-word="do">do</span><span class="word-tile" data-word="would">would</span><span class="word-tile" data-word="her">her</span><span class="word-tile" data-word="if">if</span><span class="word-tile" data-word="she">she</span><span class="word-tile" data-word="job">job</span><span class="word-tile" data-word="lost">lost</span><span class="word-tile" data-word="What">What</span><span class="word-tile" data-word="she">she</span><span class="word-tile" data-word="?">?</span>
-          </div>
-          <p class="text-xs text-gray-400 mb-1.5">Your answer:</p>
-          <div class="answer-zone"></div>
-          <div class="s3-feedback mt-2"></div>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-3 mt-6">
-        <button class="check-btn" id="s3-check">Check Answers</button>
-        <button class="reset-btn hidden" id="s3-reset">Try Again</button>
-      </div>
-      <div id="s3-score" class="mt-4 hidden"><p class="text-base font-semibold text-gray-800"></p></div>
-      <div id="s3-reminder" class="grammar-reminder hidden">
-        <p class="text-sm font-semibold text-indigo-800 mb-1">💡 Grammar Reminder</p>
-        <p class="text-sm text-indigo-700">Remember: <strong>What + WOULD + subject + DO + if + PAST SIMPLE?</strong> — The if-clause does NOT invert word order.</p>
-      </div>
-      <div class="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <p class="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">📚 Form Reference — All 4 Structures</p>
-        <div class="space-y-1 text-sm text-gray-700">
-          <p><strong class="text-indigo-700">S1:</strong> If + <em>past simple</em> , would + <em>base verb</em></p>
-          <p><strong class="text-indigo-700">S2:</strong> I wish + <em>past simple</em></p>
-          <p><strong class="text-indigo-700">S3:</strong> What + would + subject + do + if + <em>past simple</em>?</p>
-          <p><strong class="text-indigo-700">S4:</strong> It's time + subject + <em>past simple</em></p>
-        </div>
-        <p class="mt-2 text-sm font-bold text-indigo-800">🔑 Past form after if / wish / it's time = <strong>IMAGINARY</strong>, not past time!</p>
-      </div>
+    <p style="font-size:.75rem;color:#9ca3af;margin-bottom:4px;">Your answer:</p>
+    <div class="drop-zone"></div>
+    <div class="fb" id="f3q2"></div>
+  </div>
+  <div class="card" id="s3q3" data-ans="What would she do if she lost her job ?">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 3</p>
+    <div class="tile-bank">
+      <span class="tile" data-w="do">do</span><span class="tile" data-w="would">would</span><span class="tile" data-w="her">her</span><span class="tile" data-w="if">if</span><span class="tile" data-w="she">she</span><span class="tile" data-w="job">job</span><span class="tile" data-w="lost">lost</span><span class="tile" data-w="What">What</span><span class="tile" data-w="she">she</span><span class="tile" data-w="?">?</span>
     </div>
+    <p style="font-size:.75rem;color:#9ca3af;margin-bottom:4px;">Your answer:</p>
+    <div class="drop-zone"></div>
+    <div class="fb" id="f3q3"></div>
+  </div>
 
-    <!-- ===== SECTION 4 ===== -->
-    <div id="section4" class="section-panel">
-      <div class="rounded-xl overflow-hidden mb-6">
-        <div class="bg-indigo-600 text-white px-5 py-3">
-          <h2 class="text-lg font-semibold">Structure 4: It's time + subject + past simple</h2>
-          <p class="text-sm text-indigo-200 mt-0.5">Use 'It's time' to make strong suggestions — implying something is overdue.</p>
-        </div>
-        <div class="bg-indigo-50 px-5 py-3 border-b border-indigo-100">
-          <p class="text-sm font-medium text-indigo-800"><strong>FORM:</strong> It's time + subject + <span class="bg-indigo-200 px-1.5 py-0.5 rounded font-semibold">past simple</span></p>
-        </div>
-      </div>
+  <div>
+    <button class="btn-check" id="s3-check">Check Answers</button>
+    <button class="btn-reset" id="s3-reset" style="display:none;">Try Again</button>
+  </div>
+  <div id="s3-score" style="display:none;" class="score-box"></div>
+  <div id="s3-remind" class="reminder" style="display:none;">💡 <strong>Remember:</strong> What + WOULD + subject + DO + if + PAST SIMPLE? The if-clause does NOT invert word order.</div>
+  <div class="form-ref">
+    <strong style="color:var(--pri);font-size:.8rem;">📚 ALL 4 STRUCTURES</strong><br><br>
+    <strong>S1:</strong> If + [past simple] , would + [base verb]<br>
+    <strong>S2:</strong> I wish + [past simple]<br>
+    <strong>S3:</strong> What + would + subject + do + if + [past simple]?<br>
+    <strong>S4:</strong> It's time + subject + [past simple]<br><br>
+    <strong style="color:var(--pri);">🔑 Past form after if / wish / it's time = IMAGINARY, not past time!</strong>
+  </div>
+</div>
 
-      <h3 class="text-sm font-bold text-indigo-700 uppercase tracking-wide mb-3">Exercise A — Choose the correct sentence</h3>
-      <div class="space-y-5">
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="B">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 1</p>
-          <div class="space-y-2">
-            <div class="mc-option" data-value="A"><span class="font-semibold text-gray-400 mr-2">A.</span> It's time we learn how to save money.</div>
-            <div class="mc-option" data-value="B"><span class="font-semibold text-gray-400 mr-2">B.</span> It's time we learned how to save money.</div>
-            <div class="mc-option" data-value="C"><span class="font-semibold text-gray-400 mr-2">C.</span> It's time we will learn how to save money.</div>
-            <div class="mc-option" data-value="D"><span class="font-semibold text-gray-400 mr-2">D.</span> It's time we are learning how to save money.</div>
-          </div>
-          <div class="s4-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="C">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 2</p>
-          <div class="space-y-2">
-            <div class="mc-option" data-value="A"><span class="font-semibold text-gray-400 mr-2">A.</span> It's time he apologises.</div>
-            <div class="mc-option" data-value="B"><span class="font-semibold text-gray-400 mr-2">B.</span> It's time he will apologise.</div>
-            <div class="mc-option" data-value="C"><span class="font-semibold text-gray-400 mr-2">C.</span> It's time he apologised.</div>
-            <div class="mc-option" data-value="D"><span class="font-semibold text-gray-400 mr-2">D.</span> It's time he would apologise.</div>
-          </div>
-          <div class="s4-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="B">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 3</p>
-          <div class="space-y-2">
-            <div class="mc-option" data-value="A"><span class="font-semibold text-gray-400 mr-2">A.</span> It's time you would start saving.</div>
-            <div class="mc-option" data-value="B"><span class="font-semibold text-gray-400 mr-2">B.</span> It's time you started saving.</div>
-            <div class="mc-option" data-value="C"><span class="font-semibold text-gray-400 mr-2">C.</span> It's time you start saving.</div>
-            <div class="mc-option" data-value="D"><span class="font-semibold text-gray-400 mr-2">D.</span> It's time you are starting to save.</div>
-          </div>
-          <div class="s4-feedback mt-2"></div>
-        </div>
-        <div class="bg-gray-50 rounded-xl p-4 md:p-5 s4-q-block" data-correct="A">
-          <p class="text-sm font-semibold text-gray-500 mb-3">Question 4</p>
-          <div class="space-y-2">
-            <div class="mc-option" data-value="A"><span class="font-semibold text-gray-400 mr-2">A.</span> It's time we left the party.</div>
-            <div class="mc-option" data-value="B"><span class="font-semibold text-gray-400 mr-2">B.</span> It's time we leave the party.</div>
-            <div class="mc-option" data-value="C"><span class="font-semibold text-gray-400 mr-2">C.</span> It's time we will leave the party.</div>
-            <div class="mc-option" data-value="D"><span class="font-semibold text-gray-400 mr-2">D.</span> It's time we are leaving the party.</div>
-          </div>
-          <div class="s4-feedback mt-2"></div>
-        </div>
-      </div>
+<!-- SECTION 4 -->
+<div id="s4" class="panel">
+  <div class="sec-header">
+    <h2 style="font-size:1.05rem;font-weight:700;">Structure 4: It's time + subject + past simple</h2>
+    <p style="font-size:.82rem;opacity:.85;margin-top:3px;">A strong suggestion — implies it should have happened already!</p>
+  </div>
+  <div class="sec-sub"><strong>FORM:</strong> It's time + subject + [past simple]</div>
 
-      <div class="flex flex-wrap gap-3 mt-6">
-        <button class="check-btn" id="s4-check">Check Answers</button>
-        <button class="reset-btn hidden" id="s4-reset">Try Again</button>
-      </div>
-      <div id="s4-score" class="mt-4 hidden"><p class="text-base font-semibold text-gray-800"></p></div>
-      <div id="s4-reminder" class="grammar-reminder hidden">
-        <p class="text-sm font-semibold text-indigo-800 mb-1">💡 Grammar Reminder</p>
-        <p class="text-sm text-indigo-700">Remember: <strong>It's time + subject + PAST SIMPLE</strong>. The past form signals <strong>URGENCY</strong> — not past time!</p>
-      </div>
-      <div class="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4">
-        <p class="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">📚 Form Reference — All 4 Structures</p>
-        <div class="space-y-1 text-sm text-gray-700">
-          <p><strong class="text-indigo-700">S1:</strong> If + <em>past simple</em> , would + <em>base verb</em></p>
-          <p><strong class="text-indigo-700">S2:</strong> I wish + <em>past simple</em></p>
-          <p><strong class="text-indigo-700">S3:</strong> What + would + subject + do + if + <em>past simple</em>?</p>
-          <p><strong class="text-indigo-700">S4:</strong> It's time + subject + <em>past simple</em></p>
-        </div>
-        <p class="mt-2 text-sm font-bold text-indigo-800">🔑 Past form after if / wish / it's time = <strong>IMAGINARY</strong>, not past time!</p>
-      </div>
-    </div>
+  <h3 style="font-size:.82rem;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Exercise A — Choose the correct sentence</h3>
+  <div class="card" id="s4q1" data-ans="B">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 1 — Which sentence is correct?</p>
+    <div class="mc-opt" data-val="A"><strong style="color:#9ca3af;margin-right:6px;">A.</strong> It's time we learn how to save money.</div>
+    <div class="mc-opt" data-val="B"><strong style="color:#9ca3af;margin-right:6px;">B.</strong> It's time we learned how to save money.</div>
+    <div class="mc-opt" data-val="C"><strong style="color:#9ca3af;margin-right:6px;">C.</strong> It's time we will learn how to save money.</div>
+    <div class="mc-opt" data-val="D"><strong style="color:#9ca3af;margin-right:6px;">D.</strong> It's time we are learning how to save money.</div>
+    <div class="fb" id="f4q1"></div>
+  </div>
+  <div class="card" id="s4q2" data-ans="C">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 2 — Which sentence is correct?</p>
+    <div class="mc-opt" data-val="A"><strong style="color:#9ca3af;margin-right:6px;">A.</strong> It's time he apologises.</div>
+    <div class="mc-opt" data-val="B"><strong style="color:#9ca3af;margin-right:6px;">B.</strong> It's time he will apologise.</div>
+    <div class="mc-opt" data-val="C"><strong style="color:#9ca3af;margin-right:6px;">C.</strong> It's time he apologised.</div>
+    <div class="mc-opt" data-val="D"><strong style="color:#9ca3af;margin-right:6px;">D.</strong> It's time he would apologise.</div>
+    <div class="fb" id="f4q2"></div>
+  </div>
+  <div class="card" id="s4q3" data-ans="B">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 3 — Which sentence is correct?</p>
+    <div class="mc-opt" data-val="A"><strong style="color:#9ca3af;margin-right:6px;">A.</strong> It's time you would start saving.</div>
+    <div class="mc-opt" data-val="B"><strong style="color:#9ca3af;margin-right:6px;">B.</strong> It's time you started saving.</div>
+    <div class="mc-opt" data-val="C"><strong style="color:#9ca3af;margin-right:6px;">C.</strong> It's time you start saving.</div>
+    <div class="mc-opt" data-val="D"><strong style="color:#9ca3af;margin-right:6px;">D.</strong> It's time you are starting to save.</div>
+    <div class="fb" id="f4q3"></div>
+  </div>
+  <div class="card" id="s4q4" data-ans="A">
+    <p style="font-size:.78rem;color:#6b7280;font-weight:600;margin-bottom:8px;">Question 4 — Which sentence is correct?</p>
+    <div class="mc-opt" data-val="A"><strong style="color:#9ca3af;margin-right:6px;">A.</strong> It's time we left the party.</div>
+    <div class="mc-opt" data-val="B"><strong style="color:#9ca3af;margin-right:6px;">B.</strong> It's time we leave the party.</div>
+    <div class="mc-opt" data-val="C"><strong style="color:#9ca3af;margin-right:6px;">C.</strong> It's time we will leave the party.</div>
+    <div class="mc-opt" data-val="D"><strong style="color:#9ca3af;margin-right:6px;">D.</strong> It's time we are leaving the party.</div>
+    <div class="fb" id="f4q4"></div>
+  </div>
 
-    <!-- RESULTS -->
-    <div id="results-panel" class="hidden mt-8 bg-indigo-50 rounded-2xl p-6 md:p-8 border border-indigo-100">
-      <h2 class="text-xl font-bold text-indigo-800 mb-1">🏆 Final Results</h2>
-      <p class="text-sm text-indigo-600 mb-5">You've completed all four sections.</p>
-      <div class="overflow-x-auto mb-5">
-        <table class="results-table w-full bg-white rounded-xl overflow-hidden text-sm">
-          <thead class="bg-indigo-600 text-white">
-            <tr><th class="font-semibold">Structure</th><th class="font-semibold text-center">Your Score</th><th class="font-semibold text-center">Max</th></tr>
-          </thead>
-          <tbody>
-            <tr class="border-b border-gray-100"><td>1. If + past simple, would + base verb</td><td class="text-center font-semibold" id="res-s1">—</td><td class="text-center">8</td></tr>
-            <tr class="border-b border-gray-100"><td>2. I wish + past simple</td><td class="text-center font-semibold" id="res-s2">—</td><td class="text-center">2</td></tr>
-            <tr class="border-b border-gray-100"><td>3. What would you do if…?</td><td class="text-center font-semibold" id="res-s3">—</td><td class="text-center">3</td></tr>
-            <tr><td>4. It's time + subject + past simple</td><td class="text-center font-semibold" id="res-s4">—</td><td class="text-center">4</td></tr>
-          </tbody>
-          <tfoot class="bg-gray-50">
-            <tr><td class="font-bold">Total</td><td class="text-center font-bold" id="res-total">—</td><td class="text-center font-bold">17</td></tr>
-          </tfoot>
-        </table>
-      </div>
-      <div id="results-message" class="text-base font-medium text-gray-800 mb-5"></div>
-      <button class="reset-btn" id="reset-all-btn">↺ Reset All Sections</button>
-    </div>
-  </main>
+  <div>
+    <button class="btn-check" id="s4-check">Check Answers</button>
+    <button class="btn-reset" id="s4-reset" style="display:none;">Try Again</button>
+  </div>
+  <div id="s4-score" style="display:none;" class="score-box"></div>
+  <div id="s4-remind" class="reminder" style="display:none;">💡 <strong>Remember:</strong> It's time + subject + PAST SIMPLE. The past form signals URGENCY — not past time!</div>
+  <div class="form-ref">
+    <strong style="color:var(--pri);font-size:.8rem;">📚 ALL 4 STRUCTURES</strong><br><br>
+    <strong>S1:</strong> If + [past simple] , would + [base verb]<br>
+    <strong>S2:</strong> I wish + [past simple]<br>
+    <strong>S3:</strong> What + would + subject + do + if + [past simple]?<br>
+    <strong>S4:</strong> It's time + subject + [past simple]<br><br>
+    <strong style="color:var(--pri);">🔑 Past form after if / wish / it's time = IMAGINARY, not past time!</strong>
+  </div>
+</div>
 
-  <footer class="py-6 text-center border-t border-gray-100 mt-auto">
-    <p class="text-xs text-gray-400">Hypothetical Situations — Controlled Practice | B1 Level</p>
-  </footer>
+<!-- RESULTS -->
+<div class="results" id="results">
+  <h2 style="font-size:1.15rem;font-weight:800;color:#1e1b4b;margin-bottom:4px;">🏆 Final Results</h2>
+  <p style="font-size:.85rem;color:#6366f1;margin-bottom:16px;">You've completed all four sections!</p>
+  <table>
+    <thead><tr><th>Structure</th><th style="text-align:center;">Score</th><th style="text-align:center;">Max</th></tr></thead>
+    <tbody>
+      <tr><td>1. If + past simple → would + base verb</td><td style="text-align:center;font-weight:700;" id="r1">—</td><td style="text-align:center;">8</td></tr>
+      <tr><td>2. I wish + past simple</td><td style="text-align:center;font-weight:700;" id="r2">—</td><td style="text-align:center;">2</td></tr>
+      <tr><td>3. What would you do if…?</td><td style="text-align:center;font-weight:700;" id="r3">—</td><td style="text-align:center;">3</td></tr>
+      <tr><td>4. It's time + subject + past simple</td><td style="text-align:center;font-weight:700;" id="r4">—</td><td style="text-align:center;">4</td></tr>
+    </tbody>
+    <tfoot><tr><td>Total</td><td style="text-align:center;" id="rtotal">—</td><td style="text-align:center;">17</td></tr></tfoot>
+  </table>
+  <p id="r-msg" style="margin-top:14px;font-weight:600;font-size:.95rem;"></p>
+  <button class="btn-reset" id="reset-all" style="margin-top:12px;margin-left:0;">↺ Reset All</button>
+</div>
 
-  <script>
-    // TABS
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.section-panel');
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        panels.forEach(p => { p.classList.remove('active'); if(p.id===btn.dataset.tab) p.classList.add('active'); });
+</main>
+
+<footer style="text-align:center;padding:20px;font-size:.75rem;color:#9ca3af;border-top:1px solid #e5e7eb;margin-top:24px;">
+  Hypothetical Situations — Controlled Practice | B1 Level
+</footer>
+
+<script>
+(function(){
+
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('.panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+
+  var scores = {s1:null, s2:null, s3:null, s4:null};
+  function updateProgress(){
+    var done = 0;
+    for(var k in scores){ if(scores[k] !== null) done++; }
+    document.getElementById('prog-text').textContent = done + ' / 4 done';
+    document.getElementById('prog-fill').style.width = (done/4*100) + '%';
+    if(done === 4) showResults();
+  }
+
+  // SECTION 1
+  document.querySelectorAll('.card[data-ans] .err-opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var card = opt.closest('.card');
+      card.querySelectorAll('.err-opt').forEach(function(o){ o.classList.remove('picked'); });
+      opt.classList.add('picked');
+      card._picked = opt.getAttribute('data-val');
+    });
+  });
+
+  document.getElementById('s1-check').addEventListener('click', function(){
+    var score = 0;
+    var sels = document.querySelectorAll('.s1sel');
+    var fbs = ['f1q1','f1q2','f1q3','f1q4','f1q5'];
+    sels.forEach(function(sel, i){
+      sel.disabled = true;
+      var ok = sel.value === sel.getAttribute('data-ans');
+      sel.classList.add(ok ? 'correct' : 'wrong');
+      var fb = document.getElementById(fbs[i]);
+      if(ok){ fb.textContent = '✓ Correct!'; fb.className = 'fb ok'; score++; }
+      else { fb.textContent = '✗ Correct answer: ' + sel.getAttribute('data-ans'); fb.className = 'fb err'; }
+    });
+    var errCards = [
+      {id:'e1b1', fb:'f1q6'},
+      {id:'e1b2', fb:'f1q7'},
+      {id:'e1b3', fb:'f1q8'}
+    ];
+    errCards.forEach(function(ec){
+      var card = document.getElementById(ec.id);
+      var correct = card.getAttribute('data-ans');
+      var picked = card._picked || '';
+      card.querySelectorAll('.err-opt').forEach(function(o){
+        o.classList.add('locked');
+        if(o.getAttribute('data-val') === correct) o.classList.add('correct');
+        if(o.getAttribute('data-val') === picked && picked !== correct) o.classList.add('wrong');
+      });
+      var fb = document.getElementById(ec.fb);
+      if(picked === correct){ fb.textContent = '✓ Correct!'; fb.className = 'fb ok'; score++; }
+      else { fb.textContent = '✗ Correct answer: ' + correct; fb.className = 'fb err'; }
+    });
+    scores.s1 = score;
+    var scoreEl = document.getElementById('s1-score');
+    scoreEl.textContent = 'You got ' + score + ' / 8 correct.';
+    scoreEl.style.display = 'block';
+    document.getElementById('s1-check').disabled = true;
+    document.getElementById('s1-reset').style.display = 'inline-block';
+    if(score < 8) document.getElementById('s1-remind').style.display = 'block';
+    document.getElementById('b1').style.display = 'inline-block';
+    updateProgress();
+  });
+
+  document.getElementById('s1-reset').addEventListener('click', function(){
+    document.querySelectorAll('.s1sel').forEach(function(sel){
+      sel.value = ''; sel.disabled = false; sel.classList.remove('correct','wrong');
+    });
+    ['f1q1','f1q2','f1q3','f1q4','f1q5','f1q6','f1q7','f1q8'].forEach(function(id){
+      var el = document.getElementById(id); el.textContent = ''; el.className = 'fb';
+    });
+    ['e1b1','e1b2','e1b3'].forEach(function(id){
+      var card = document.getElementById(id);
+      card._picked = '';
+      card.querySelectorAll('.err-opt').forEach(function(o){
+        o.classList.remove('picked','correct','wrong','locked');
       });
     });
+    document.getElementById('s1-score').style.display = 'none';
+    document.getElementById('s1-remind').style.display = 'none';
+    document.getElementById('s1-check').disabled = false;
+    document.getElementById('s1-reset').style.display = 'none';
+    document.getElementById('b1').style.display = 'none';
+    scores.s1 = null; updateProgress();
+    document.getElementById('results').style.display = 'none';
+  });
 
-    // STATE
-    const state = { scores:{ s1:null,s2:null,s3:null,s4:null } };
-    function updateProgress() {
-      const done = Object.values(state.scores).filter(v=>v!==null).length;
-      document.getElementById('progress-text').textContent = done+' / 4 sections';
-      document.getElementById('progress-bar').style.width = (done/4*100)+'%';
-      if(done===4) showResults();
-    }
+  // SECTION 2
+  document.querySelectorAll('#s2 .mc-opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var card = opt.closest('.card');
+      card.querySelectorAll('.mc-opt').forEach(function(o){ o.classList.remove('picked'); });
+      opt.classList.add('picked');
+      card._picked = opt.getAttribute('data-val');
+    });
+  });
 
-    // SECTION 1
-    document.querySelectorAll('.s1-error-block').forEach(block => {
-      block.querySelectorAll('.error-option').forEach(opt => {
-        opt.addEventListener('click',()=>{ block.querySelectorAll('.error-option').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); block.dataset.selected=opt.dataset.value; });
+  document.getElementById('s2-check').addEventListener('click', function(){
+    var score = 0;
+    var blocks = [{id:'s2b1', fb:'f2q1'},{id:'s2b2', fb:'f2q2'}];
+    blocks.forEach(function(b){
+      var card = document.getElementById(b.id);
+      var correct = card.getAttribute('data-ans');
+      var picked = card._picked || '';
+      card.querySelectorAll('.mc-opt').forEach(function(o){
+        o.classList.add('locked');
+        if(o.getAttribute('data-val') === correct) o.classList.add('correct');
+        if(o.getAttribute('data-val') === picked && picked !== correct) o.classList.add('wrong');
       });
+      var fb = document.getElementById(b.fb);
+      if(picked === correct){ fb.textContent = '✓ Correct!'; fb.className = 'fb ok'; score++; }
+      else { fb.textContent = '✗ The correct sentence is option ' + correct; fb.className = 'fb err'; }
     });
-    document.getElementById('s1-check').addEventListener('click',()=>{
-      let score=0;
-      document.querySelectorAll('.s1-select').forEach(sel=>{
-        const ok=sel.value===sel.dataset.correct;
-        sel.classList.add(ok?'correct-answer':'incorrect-answer'); sel.disabled=true;
-        if(!ok){ const t=document.createElement('span'); t.className='tooltip-incorrect'; t.style.cssText='display:inline-block;margin-left:4px'; t.textContent='→ '+sel.dataset.correct; sel.insertAdjacentElement('afterend',t); }
-        if(ok) score++;
-      });
-      document.querySelectorAll('.s1-error-block').forEach(block=>{
-        const correct=block.dataset.correct, selected=block.dataset.selected||'';
-        block.querySelectorAll('.error-option').forEach(opt=>{ opt.classList.add('checked'); if(opt.dataset.value===correct) opt.classList.add('correct-choice'); if(opt.dataset.value===selected&&selected!==correct) opt.classList.add('incorrect-choice'); });
-        const fb=block.querySelector('.s1b-feedback');
-        if(selected===correct){score++; fb.innerHTML='<span class="tooltip-correct">✓ Correct!</span>';}
-        else fb.innerHTML='<span class="tooltip-incorrect">✗ Correct answer: <strong style="color:#16a34a">'+correct+'</strong></span>';
-      });
-      state.scores.s1=score;
-      document.getElementById('s1-score').classList.remove('hidden');
-      document.getElementById('s1-score').querySelector('p').textContent='You got '+score+' / 8 correct.';
-      document.getElementById('s1-check').disabled=true;
-      document.getElementById('s1-reset').classList.remove('hidden');
-      if(score<8) document.getElementById('s1-reminder').classList.remove('hidden');
-      document.getElementById('badge1').classList.remove('hidden');
-      updateProgress();
-    });
-    document.getElementById('s1-reset').addEventListener('click',()=>{
-      document.querySelectorAll('.s1-select').forEach(sel=>{ sel.value=''; sel.disabled=false; sel.classList.remove('correct-answer','incorrect-answer'); });
-      document.querySelectorAll('.tooltip-incorrect, .tooltip-correct').forEach(t=>{ if(t.style.marginLeft) t.remove(); });
-      document.querySelectorAll('.s1-error-block').forEach(block=>{ delete block.dataset.selected; block.querySelectorAll('.error-option').forEach(o=>o.classList.remove('selected','correct-choice','incorrect-choice','checked')); block.querySelector('.s1b-feedback').innerHTML=''; });
-      ['s1-score','s1-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-      document.getElementById('s1-check').disabled=false; document.getElementById('s1-reset').classList.add('hidden'); document.getElementById('badge1').classList.add('hidden');
-      state.scores.s1=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
-    });
+    scores.s2 = score;
+    var scoreEl = document.getElementById('s2-score');
+    scoreEl.textContent = 'You got ' + score + ' / 2 correct.';
+    scoreEl.style.display = 'block';
+    document.getElementById('s2-check').disabled = true;
+    document.getElementById('s2-reset').style.display = 'inline-block';
+    if(score < 2) document.getElementById('s2-remind').style.display = 'block';
+    document.getElementById('b2').style.display = 'inline-block';
+    updateProgress();
+  });
 
-    // SECTION 2
-    document.querySelectorAll('.s2-mc-block').forEach(block=>{
-      block.querySelectorAll('.mc-option').forEach(opt=>{ opt.addEventListener('click',()=>{ block.querySelectorAll('.mc-option').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); block.dataset.selected=opt.dataset.value; }); });
+  document.getElementById('s2-reset').addEventListener('click', function(){
+    ['s2b1','s2b2'].forEach(function(id){
+      var card = document.getElementById(id);
+      card._picked = '';
+      card.querySelectorAll('.mc-opt').forEach(function(o){ o.classList.remove('picked','correct','wrong','locked'); });
     });
-    document.getElementById('s2-check').addEventListener('click',()=>{
-      let score=0;
-      document.querySelectorAll('.s2-mc-block').forEach(block=>{
-        const correct=block.dataset.correct, selected=block.dataset.selected||'';
-        block.querySelectorAll('.mc-option').forEach(opt=>{
-          opt.classList.add('checked');
-          if(opt.dataset.value===correct){ opt.classList.add('correct-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#16a34a'; m.textContent='✓'; opt.appendChild(m); }
-          if(opt.dataset.value===selected&&selected!==correct){ opt.classList.add('incorrect-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#dc2626'; m.textContent='✗'; opt.appendChild(m); }
-        });
-        if(selected===correct) score++;
-      });
-      state.scores.s2=score;
-      document.getElementById('s2-score').classList.remove('hidden');
-      document.getElementById('s2-score').querySelector('p').textContent='You got '+score+' / 2 correct.';
-      document.getElementById('s2-check').disabled=true; document.getElementById('s2-reset').classList.remove('hidden');
-      if(score<2) document.getElementById('s2-reminder').classList.remove('hidden');
-      document.getElementById('badge2').classList.remove('hidden'); updateProgress();
-    });
-    document.getElementById('s2-reset').addEventListener('click',()=>{
-      document.querySelectorAll('.s2-mc-block').forEach(block=>{ delete block.dataset.selected; block.querySelectorAll('.mc-option').forEach(opt=>{ opt.classList.remove('selected','correct-choice','incorrect-choice','checked'); opt.querySelectorAll('span.ml-2').forEach(m=>m.remove()); }); block.querySelector('.s2-mc-feedback').innerHTML=''; });
-      ['s2-score','s2-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-      document.getElementById('s2-check').disabled=false; document.getElementById('s2-reset').classList.add('hidden'); document.getElementById('badge2').classList.add('hidden');
-      state.scores.s2=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
-    });
+    ['f2q1','f2q2'].forEach(function(id){ var el=document.getElementById(id); el.textContent=''; el.className='fb'; });
+    document.getElementById('s2-score').style.display = 'none';
+    document.getElementById('s2-remind').style.display = 'none';
+    document.getElementById('s2-check').disabled = false;
+    document.getElementById('s2-reset').style.display = 'none';
+    document.getElementById('b2').style.display = 'none';
+    scores.s2 = null; updateProgress();
+    document.getElementById('results').style.display = 'none';
+  });
 
-    // SECTION 3
-    document.querySelectorAll('.s3-q-block').forEach(block=>{
-      const bank=block.querySelector('.word-bank'), zone=block.querySelector('.answer-zone');
-      bank.querySelectorAll('.word-tile').forEach(tile=>{
-        tile.addEventListener('click',()=>{ if(tile.classList.contains('in-answer')){ tile.classList.remove('in-answer'); bank.appendChild(tile); } else { tile.classList.add('in-answer'); zone.appendChild(tile); } });
+  // SECTION 3 - Word tiles
+  document.querySelectorAll('#s3 .card').forEach(function(card){
+    var bank = card.querySelector('.tile-bank');
+    var zone = card.querySelector('.drop-zone');
+    bank.querySelectorAll('.tile').forEach(function(tile){
+      tile.addEventListener('click', function(){
+        if(tile.classList.contains('used')){
+          tile.classList.remove('used');
+          bank.appendChild(tile);
+        } else {
+          tile.classList.add('used');
+          zone.appendChild(tile);
+        }
       });
     });
-    document.getElementById('s3-check').addEventListener('click',()=>{
-      let score=0;
-      document.querySelectorAll('.s3-q-block').forEach(block=>{
-        const zone=block.querySelector('.answer-zone'), correct=block.dataset.answer;
-        const got=Array.from(zone.querySelectorAll('.word-tile')).map(t=>t.dataset.word).join(' ');
-        const ok=got.toLowerCase().trim()===correct.toLowerCase().trim();
-        zone.classList.add(ok?'correct-zone':'incorrect-zone');
-        block.querySelector('.s3-feedback').innerHTML=ok?'<span class="tooltip-correct">✓ Correct!</span>':'<span class="tooltip-incorrect">✗ Correct order: <strong style="color:#16a34a">'+correct+'</strong></span>';
-        block.querySelectorAll('.word-tile').forEach(t=>t.style.pointerEvents='none');
-        if(ok) score++;
-      });
-      state.scores.s3=score;
-      document.getElementById('s3-score').classList.remove('hidden');
-      document.getElementById('s3-score').querySelector('p').textContent='You got '+score+' / 3 correct.';
-      document.getElementById('s3-check').disabled=true; document.getElementById('s3-reset').classList.remove('hidden');
-      if(score<3) document.getElementById('s3-reminder').classList.remove('hidden');
-      document.getElementById('badge3').classList.remove('hidden'); updateProgress();
-    });
-    document.getElementById('s3-reset').addEventListener('click',()=>{
-      document.querySelectorAll('.s3-q-block').forEach(block=>{
-        const bank=block.querySelector('.word-bank'), zone=block.querySelector('.answer-zone');
-        zone.querySelectorAll('.word-tile').forEach(t=>{ t.classList.remove('in-answer'); t.style.pointerEvents=''; bank.appendChild(t); });
-        bank.querySelectorAll('.word-tile').forEach(t=>t.style.pointerEvents='');
-        zone.classList.remove('correct-zone','incorrect-zone'); block.querySelector('.s3-feedback').innerHTML='';
-      });
-      ['s3-score','s3-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-      document.getElementById('s3-check').disabled=false; document.getElementById('s3-reset').classList.add('hidden'); document.getElementById('badge3').classList.add('hidden');
-      state.scores.s3=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
-    });
+  });
 
-    // SECTION 4
-    document.querySelectorAll('.s4-q-block').forEach(block=>{
-      block.querySelectorAll('.mc-option').forEach(opt=>{ opt.addEventListener('click',()=>{ block.querySelectorAll('.mc-option').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); block.dataset.selected=opt.dataset.value; }); });
+  document.getElementById('s3-check').addEventListener('click', function(){
+    var score = 0;
+    var qs = [{id:'s3q1',fb:'f3q1'},{id:'s3q2',fb:'f3q2'},{id:'s3q3',fb:'f3q3'}];
+    qs.forEach(function(q){
+      var card = document.getElementById(q.id);
+      var zone = card.querySelector('.drop-zone');
+      var correct = card.getAttribute('data-ans').trim().toLowerCase();
+      var got = Array.from(zone.querySelectorAll('.tile')).map(function(t){ return t.getAttribute('data-w'); }).join(' ').trim().toLowerCase();
+      var ok = got === correct;
+      zone.classList.add(ok ? 'correct' : 'wrong');
+      card.querySelectorAll('.tile').forEach(function(t){ t.style.pointerEvents = 'none'; });
+      var fb = document.getElementById(q.fb);
+      if(ok){ fb.textContent = '✓ Correct!'; fb.className = 'fb ok'; score++; }
+      else { fb.textContent = '✗ Correct: ' + card.getAttribute('data-ans'); fb.className = 'fb err'; }
     });
-    document.getElementById('s4-check').addEventListener('click',()=>{
-      let score=0;
-      document.querySelectorAll('.s4-q-block').forEach(block=>{
-        const correct=block.dataset.correct, selected=block.dataset.selected||'';
-        block.querySelectorAll('.mc-option').forEach(opt=>{
-          opt.classList.add('checked');
-          if(opt.dataset.value===correct){ opt.classList.add('correct-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#16a34a'; m.textContent='✓'; opt.appendChild(m); }
-          if(opt.dataset.value===selected&&selected!==correct){ opt.classList.add('incorrect-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#dc2626'; m.textContent='✗'; opt.appendChild(m); }
-        });
-        if(selected===correct) score++;
-      });
-      state.scores.s4=score;
-      document.getElementById('s4-score').classList.remove('hidden');
-      document.getElementById('s4-score').querySelector('p').textContent='You got '+score+' / 4 correct.';
-      document.getElementById('s4-check').disabled=true; document.getElementById('s4-reset').classList.remove('hidden');
-      if(score<4) document.getElementById('s4-reminder').classList.remove('hidden');
-      document.getElementById('badge4').classList.remove('hidden'); updateProgress();
-    });
-    document.getElementById('s4-reset').addEventListener('click',()=>{
-      document.querySelectorAll('.s4-q-block').forEach(block=>{ delete block.dataset.selected; block.querySelectorAll('.mc-option').forEach(opt=>{ opt.classList.remove('selected','correct-choice','incorrect-choice','checked'); opt.querySelectorAll('span.ml-2').forEach(m=>m.remove()); }); block.querySelector('.s4-feedback').innerHTML=''; });
-      ['s4-score','s4-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-      document.getElementById('s4-check').disabled=false; document.getElementById('s4-reset').classList.add('hidden'); document.getElementById('badge4').classList.add('hidden');
-      state.scores.s4=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
-    });
+    scores.s3 = score;
+    var scoreEl = document.getElementById('s3-score');
+    scoreEl.textContent = 'You got ' + score + ' / 3 correct.';
+    scoreEl.style.display = 'block';
+    document.getElementById('s3-check').disabled = true;
+    document.getElementById('s3-reset').style.display = 'inline-block';
+    if(score < 3) document.getElementById('s3-remind').style.display = 'block';
+    document.getElementById('b3').style.display = 'inline-block';
+    updateProgress();
+  });
 
-    // RESULTS
-    function showResults() {
-      const panel=document.getElementById('results-panel'); panel.classList.remove('hidden');
-      ['s1','s2','s3','s4'].forEach(k=>document.getElementById('res-'+k).textContent=state.scores[k]);
-      const total=Object.values(state.scores).reduce((a,b)=>a+b,0);
-      document.getElementById('res-total').textContent=total;
-      document.getElementById('results-message').textContent=total>=14?'🌟 Excellent! You\'ve got a strong grasp of all four structures. Well done!':total>=9?'👍 Good work! Review the structures where you made errors and try again.':'📖 Keep practising! Click \'Try Again\' on any section to redo it.';
-      panel.scrollIntoView({behavior:'smooth',block:'center'});
-    }
-    document.getElementById('reset-all-btn').addEventListener('click',()=>{
-      ['s1','s2','s3','s4'].forEach(k=>document.getElementById(k+'-reset').click());
-      document.getElementById('results-panel').classList.add('hidden');
-      tabBtns.forEach(b=>b.classList.remove('active')); tabBtns[0].classList.add('active');
-      panels.forEach(p=>p.classList.remove('active')); document.getElementById('section1').classList.add('active');
-      window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('s3-reset').addEventListener('click', function(){
+    ['s3q1','s3q2','s3q3'].forEach(function(id){
+      var card = document.getElementById(id);
+      var bank = card.querySelector('.tile-bank');
+      var zone = card.querySelector('.drop-zone');
+      zone.querySelectorAll('.tile').forEach(function(t){
+        t.classList.remove('used'); t.style.pointerEvents = ''; bank.appendChild(t);
+      });
+      bank.querySelectorAll('.tile').forEach(function(t){ t.style.pointerEvents = ''; });
+      zone.classList.remove('correct','wrong');
     });
-  </script>
+    ['f3q1','f3q2','f3q3'].forEach(function(id){ var el=document.getElementById(id); el.textContent=''; el.className='fb'; });
+    document.getElementById('s3-score').style.display = 'none';
+    document.getElementById('s3-remind').style.display = 'none';
+    document.getElementById('s3-check').disabled = false;
+    document.getElementById('s3-reset').style.display = 'none';
+    document.getElementById('b3').style.display = 'none';
+    scores.s3 = null; updateProgress();
+    document.getElementById('results').style.display = 'none';
+  });
+
+  // SECTION 4
+  document.querySelectorAll('#s4 .mc-opt').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      var card = opt.closest('.card');
+      card.querySelectorAll('.mc-opt').forEach(function(o){ o.classList.remove('picked'); });
+      opt.classList.add('picked');
+      card._picked = opt.getAttribute('data-val');
+    });
+  });
+
+  document.getElementById('s4-check').addEventListener('click', function(){
+    var score = 0;
+    var qs = [{id:'s4q1',fb:'f4q1'},{id:'s4q2',fb:'f4q2'},{id:'s4q3',fb:'f4q3'},{id:'s4q4',fb:'f4q4'}];
+    qs.forEach(function(q){
+      var card = document.getElementById(q.id);
+      var correct = card.getAttribute('data-ans');
+      var picked = card._picked || '';
+      card.querySelectorAll('.mc-opt').forEach(function(o){
+        o.classList.add('locked');
+        if(o.getAttribute('data-val') === correct) o.classList.add('correct');
+        if(o.getAttribute('data-val') === picked && picked !== correct) o.classList.add('wrong');
+      });
+      var fb = document.getElementById(q.fb);
+      if(picked === correct){ fb.textContent = '✓ Correct!'; fb.className = 'fb ok'; score++; }
+      else { fb.textContent = '✗ The correct sentence is option ' + correct; fb.className = 'fb err'; }
+    });
+    scores.s4 = score;
+    var scoreEl = document.getElementById('s4-score');
+    scoreEl.textContent = 'You got ' + score + ' / 4 correct.';
+    scoreEl.style.display = 'block';
+    document.getElementById('s4-check').disabled = true;
+    document.getElementById('s4-reset').style.display = 'inline-block';
+    if(score < 4) document.getElementById('s4-remind').style.display = 'block';
+    document.getElementById('b4').style.display = 'inline-block';
+    updateProgress();
+  });
+
+  document.getElementById('s4-reset').addEventListener('click', function(){
+    ['s4q1','s4q2','s4q3','s4q4'].forEach(function(id){
+      var card = document.getElementById(id);
+      card._picked = '';
+      card.querySelectorAll('.mc-opt').forEach(function(o){ o.classList.remove('picked','correct','wrong','locked'); });
+    });
+    ['f4q1','f4q2','f4q3','f4q4'].forEach(function(id){ var el=document.getElementById(id); el.textContent=''; el.className='fb'; });
+    document.getElementById('s4-score').style.display = 'none';
+    document.getElementById('s4-remind').style.display = 'none';
+    document.getElementById('s4-check').disabled = false;
+    document.getElementById('s4-reset').style.display = 'none';
+    document.getElementById('b4').style.display = 'none';
+    scores.s4 = null; updateProgress();
+    document.getElementById('results').style.display = 'none';
+  });
+
+  // RESULTS
+  function showResults(){
+    var total = scores.s1 + scores.s2 + scores.s3 + scores.s4;
+    document.getElementById('r1').textContent = scores.s1;
+    document.getElementById('r2').textContent = scores.s2;
+    document.getElementById('r3').textContent = scores.s3;
+    document.getElementById('r4').textContent = scores.s4;
+    document.getElementById('rtotal').textContent = total;
+    var msg = total >= 14 ? '🌟 Excellent! Strong grasp of all four structures!' : total >= 9 ? '👍 Good work! Review the structures where you made errors.' : '📖 Keep practising! Click Try Again on any section.';
+    document.getElementById('r-msg').textContent = msg;
+    var panel = document.getElementById('results');
+    panel.style.display = 'block';
+    panel.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  document.getElementById('reset-all').addEventListener('click', function(){
+    document.getElementById('s1-reset').click();
+    document.getElementById('s2-reset').click();
+    document.getElementById('s3-reset').click();
+    document.getElementById('s4-reset').click();
+    document.getElementById('results').style.display = 'none';
+    tabs.forEach(function(t){ t.classList.remove('active'); });
+    panels.forEach(function(p){ p.classList.remove('active'); });
+    tabs[0].classList.add('active');
+    document.getElementById('s1').classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+})();
+</script>
 </body>
 </html>
