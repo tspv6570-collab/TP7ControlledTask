@@ -455,4 +455,126 @@
       document.getElementById('badge1').classList.remove('hidden');
       updateProgress();
     });
-    document.getElementById('s1
+    document.getElementById('s1-reset').addEventListener('click',()=>{
+      document.querySelectorAll('.s1-select').forEach(sel=>{ sel.value=''; sel.disabled=false; sel.classList.remove('correct-answer','incorrect-answer'); });
+      document.querySelectorAll('.tooltip-incorrect, .tooltip-correct').forEach(t=>{ if(t.style.marginLeft) t.remove(); });
+      document.querySelectorAll('.s1-error-block').forEach(block=>{ delete block.dataset.selected; block.querySelectorAll('.error-option').forEach(o=>o.classList.remove('selected','correct-choice','incorrect-choice','checked')); block.querySelector('.s1b-feedback').innerHTML=''; });
+      ['s1-score','s1-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s1-check').disabled=false; document.getElementById('s1-reset').classList.add('hidden'); document.getElementById('badge1').classList.add('hidden');
+      state.scores.s1=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // SECTION 2
+    document.querySelectorAll('.s2-mc-block').forEach(block=>{
+      block.querySelectorAll('.mc-option').forEach(opt=>{ opt.addEventListener('click',()=>{ block.querySelectorAll('.mc-option').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); block.dataset.selected=opt.dataset.value; }); });
+    });
+    document.getElementById('s2-check').addEventListener('click',()=>{
+      let score=0;
+      document.querySelectorAll('.s2-mc-block').forEach(block=>{
+        const correct=block.dataset.correct, selected=block.dataset.selected||'';
+        block.querySelectorAll('.mc-option').forEach(opt=>{
+          opt.classList.add('checked');
+          if(opt.dataset.value===correct){ opt.classList.add('correct-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#16a34a'; m.textContent='✓'; opt.appendChild(m); }
+          if(opt.dataset.value===selected&&selected!==correct){ opt.classList.add('incorrect-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#dc2626'; m.textContent='✗'; opt.appendChild(m); }
+        });
+        if(selected===correct) score++;
+      });
+      state.scores.s2=score;
+      document.getElementById('s2-score').classList.remove('hidden');
+      document.getElementById('s2-score').querySelector('p').textContent='You got '+score+' / 2 correct.';
+      document.getElementById('s2-check').disabled=true; document.getElementById('s2-reset').classList.remove('hidden');
+      if(score<2) document.getElementById('s2-reminder').classList.remove('hidden');
+      document.getElementById('badge2').classList.remove('hidden'); updateProgress();
+    });
+    document.getElementById('s2-reset').addEventListener('click',()=>{
+      document.querySelectorAll('.s2-mc-block').forEach(block=>{ delete block.dataset.selected; block.querySelectorAll('.mc-option').forEach(opt=>{ opt.classList.remove('selected','correct-choice','incorrect-choice','checked'); opt.querySelectorAll('span.ml-2').forEach(m=>m.remove()); }); block.querySelector('.s2-mc-feedback').innerHTML=''; });
+      ['s2-score','s2-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s2-check').disabled=false; document.getElementById('s2-reset').classList.add('hidden'); document.getElementById('badge2').classList.add('hidden');
+      state.scores.s2=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // SECTION 3
+    document.querySelectorAll('.s3-q-block').forEach(block=>{
+      const bank=block.querySelector('.word-bank'), zone=block.querySelector('.answer-zone');
+      bank.querySelectorAll('.word-tile').forEach(tile=>{
+        tile.addEventListener('click',()=>{ if(tile.classList.contains('in-answer')){ tile.classList.remove('in-answer'); bank.appendChild(tile); } else { tile.classList.add('in-answer'); zone.appendChild(tile); } });
+      });
+    });
+    document.getElementById('s3-check').addEventListener('click',()=>{
+      let score=0;
+      document.querySelectorAll('.s3-q-block').forEach(block=>{
+        const zone=block.querySelector('.answer-zone'), correct=block.dataset.answer;
+        const got=Array.from(zone.querySelectorAll('.word-tile')).map(t=>t.dataset.word).join(' ');
+        const ok=got.toLowerCase().trim()===correct.toLowerCase().trim();
+        zone.classList.add(ok?'correct-zone':'incorrect-zone');
+        block.querySelector('.s3-feedback').innerHTML=ok?'<span class="tooltip-correct">✓ Correct!</span>':'<span class="tooltip-incorrect">✗ Correct order: <strong style="color:#16a34a">'+correct+'</strong></span>';
+        block.querySelectorAll('.word-tile').forEach(t=>t.style.pointerEvents='none');
+        if(ok) score++;
+      });
+      state.scores.s3=score;
+      document.getElementById('s3-score').classList.remove('hidden');
+      document.getElementById('s3-score').querySelector('p').textContent='You got '+score+' / 3 correct.';
+      document.getElementById('s3-check').disabled=true; document.getElementById('s3-reset').classList.remove('hidden');
+      if(score<3) document.getElementById('s3-reminder').classList.remove('hidden');
+      document.getElementById('badge3').classList.remove('hidden'); updateProgress();
+    });
+    document.getElementById('s3-reset').addEventListener('click',()=>{
+      document.querySelectorAll('.s3-q-block').forEach(block=>{
+        const bank=block.querySelector('.word-bank'), zone=block.querySelector('.answer-zone');
+        zone.querySelectorAll('.word-tile').forEach(t=>{ t.classList.remove('in-answer'); t.style.pointerEvents=''; bank.appendChild(t); });
+        bank.querySelectorAll('.word-tile').forEach(t=>t.style.pointerEvents='');
+        zone.classList.remove('correct-zone','incorrect-zone'); block.querySelector('.s3-feedback').innerHTML='';
+      });
+      ['s3-score','s3-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s3-check').disabled=false; document.getElementById('s3-reset').classList.add('hidden'); document.getElementById('badge3').classList.add('hidden');
+      state.scores.s3=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // SECTION 4
+    document.querySelectorAll('.s4-q-block').forEach(block=>{
+      block.querySelectorAll('.mc-option').forEach(opt=>{ opt.addEventListener('click',()=>{ block.querySelectorAll('.mc-option').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); block.dataset.selected=opt.dataset.value; }); });
+    });
+    document.getElementById('s4-check').addEventListener('click',()=>{
+      let score=0;
+      document.querySelectorAll('.s4-q-block').forEach(block=>{
+        const correct=block.dataset.correct, selected=block.dataset.selected||'';
+        block.querySelectorAll('.mc-option').forEach(opt=>{
+          opt.classList.add('checked');
+          if(opt.dataset.value===correct){ opt.classList.add('correct-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#16a34a'; m.textContent='✓'; opt.appendChild(m); }
+          if(opt.dataset.value===selected&&selected!==correct){ opt.classList.add('incorrect-choice'); const m=document.createElement('span'); m.className='ml-2 font-bold'; m.style.color='#dc2626'; m.textContent='✗'; opt.appendChild(m); }
+        });
+        if(selected===correct) score++;
+      });
+      state.scores.s4=score;
+      document.getElementById('s4-score').classList.remove('hidden');
+      document.getElementById('s4-score').querySelector('p').textContent='You got '+score+' / 4 correct.';
+      document.getElementById('s4-check').disabled=true; document.getElementById('s4-reset').classList.remove('hidden');
+      if(score<4) document.getElementById('s4-reminder').classList.remove('hidden');
+      document.getElementById('badge4').classList.remove('hidden'); updateProgress();
+    });
+    document.getElementById('s4-reset').addEventListener('click',()=>{
+      document.querySelectorAll('.s4-q-block').forEach(block=>{ delete block.dataset.selected; block.querySelectorAll('.mc-option').forEach(opt=>{ opt.classList.remove('selected','correct-choice','incorrect-choice','checked'); opt.querySelectorAll('span.ml-2').forEach(m=>m.remove()); }); block.querySelector('.s4-feedback').innerHTML=''; });
+      ['s4-score','s4-reminder'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+      document.getElementById('s4-check').disabled=false; document.getElementById('s4-reset').classList.add('hidden'); document.getElementById('badge4').classList.add('hidden');
+      state.scores.s4=null; updateProgress(); document.getElementById('results-panel').classList.add('hidden');
+    });
+
+    // RESULTS
+    function showResults() {
+      const panel=document.getElementById('results-panel'); panel.classList.remove('hidden');
+      ['s1','s2','s3','s4'].forEach(k=>document.getElementById('res-'+k).textContent=state.scores[k]);
+      const total=Object.values(state.scores).reduce((a,b)=>a+b,0);
+      document.getElementById('res-total').textContent=total;
+      document.getElementById('results-message').textContent=total>=14?'🌟 Excellent! You\'ve got a strong grasp of all four structures. Well done!':total>=9?'👍 Good work! Review the structures where you made errors and try again.':'📖 Keep practising! Click \'Try Again\' on any section to redo it.';
+      panel.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    document.getElementById('reset-all-btn').addEventListener('click',()=>{
+      ['s1','s2','s3','s4'].forEach(k=>document.getElementById(k+'-reset').click());
+      document.getElementById('results-panel').classList.add('hidden');
+      tabBtns.forEach(b=>b.classList.remove('active')); tabBtns[0].classList.add('active');
+      panels.forEach(p=>p.classList.remove('active')); document.getElementById('section1').classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  </script>
+</body>
+</html>
